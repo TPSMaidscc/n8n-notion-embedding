@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>n8n Workflow Preview</title>
+
+  <!-- Required scripts for the n8n preview component -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2/webcomponents-loader.js"></script>
+  <script src="https://www.unpkg.com/lit@2/polyfill-support.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+  <style>
+    :root { --pad: 20px; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: var(--pad); background: #0f172a; color: #e2e8f0; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
+    .title { font-size: 18px; font-weight: 600; }
+    .actions { display:flex; gap:10px; }
+    button, a.button {
+      padding:10px 14px; border-radius:10px; border:1px solid #334155; background:#111827;
+      color:#e2e8f0; text-decoration:none; cursor:pointer;
+    }
+    button:hover, a.button:hover { background:#0b1220; }
+    n8n-demo { width: 100%; height: 75vh; display:block; background:#0b1220; border:1px solid #334155; border-radius: 14px; }
+    footer { margin-top:12px; font-size:12px; color:#94a3b8; }
+    code { background:#0b1220; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">n8n Workflow Preview</div>
+    <div class="actions">
+      <button id="fullscreen" title="Full screen the preview">Full screen</button>
+      <a id="editLink" class="button" href="#" target="_blank" rel="noopener">Edit in n8n</a>
+    </div>
+  </header>
+
+  <!-- The preview component -->
+  <n8n-demo id="preview" frame="true"></n8n-demo>
+
+  <footer>
+    <p>This is a read‑only preview powered by the public <code>&lt;n8n-demo&gt;</code> web component.
+       Click <strong>Edit in n8n</strong> to open the real editor.</p>
+  </footer>
+
+  <script>
+    // 1) Load your exported/sanitized workflow JSON (replace workflow.json if you want)
+    fetch('workflow.json')
+      .then(r => r.json())
+      .then(json => {
+        document.getElementById('preview')
+          .setAttribute('workflow', JSON.stringify(json));
+      });
+
+    // 2) Browser fullscreen for the preview
+    document.getElementById('fullscreen').addEventListener('click', () => {
+      const el = document.getElementById('preview');
+      if (el.requestFullscreen) el.requestFullscreen();
+    });
+
+    // 3) Set the editor deep link. Replace with your editor URL:
+    //    - Self-hosted: https://YOUR-N8N-DOMAIN/workflow/<ID>
+    //    - n8n Cloud:  https://app.n8n.cloud/workflow/<ID>  (or your workspace URL)
+    const WORKFLOW_EDITOR_URL = 'https://YOUR-N8N-DOMAIN/workflow/123';
+    document.getElementById('editLink').href = WORKFLOW_EDITOR_URL;
+  </script>
+</body>
+</html>
