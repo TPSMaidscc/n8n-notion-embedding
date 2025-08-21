@@ -13,8 +13,14 @@
   <style>
     :root { --pad: 20px; }
     * { box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; padding: var(--pad); background: #0f172a; color: #e2e8f0; }
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap: wrap; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #0f172a; color: #e2e8f0;
+      display: grid; grid-template-rows: auto 1fr auto; /* header, main, footer */
+    }
+    header, main, footer { padding: var(--pad); }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap; }
     .title { font-size: 18px; font-weight: 600; }
     .actions { display:flex; gap:10px; }
     button, a.button {
@@ -22,8 +28,15 @@
       color:#e2e8f0; text-decoration:none; cursor:pointer;
     }
     button:hover, a.button:hover { background:#0b1220; }
-    n8n-demo { width: 100%; height: 75vh; display:block; background:#0b1220; border:1px solid #334155; border-radius: 14px; }
-    footer { margin-top:12px; font-size:12px; color:#94a3b8; }
+
+    /* The preview should fill the main area */
+    main { min-height: 0; }            /* allow child to stretch */
+    n8n-demo {
+      width: 100%; height: 100%;
+      display:block; background:#0b1220; border:1px solid #334155; border-radius: 14px;
+      min-height: 420px;               /* sensible minimum */
+    }
+    footer { font-size:12px; color:#94a3b8; }
     code { background:#0b1220; padding:2px 6px; border-radius:6px; }
   </style>
 </head>
@@ -36,16 +49,32 @@
     </div>
   </header>
 
-  <!-- The preview component -->
-  <n8n-demo id="preview" frame="true"></n8n-demo>
+  <main>
+    <!-- The preview component fills the whole main area -->
+    <n8n-demo id="preview" frame="true"></n8n-demo>
+  </main>
 
   <footer>
-    <p>This is a read‑only preview powered by the public <code>&lt;n8n-demo&gt;</code> web component.
+    <p>This is a read-only preview powered by the public <code>&lt;n8n-demo&gt;</code> web component.
        Click <strong>Edit in n8n</strong> to open the real editor.</p>
   </footer>
 
   <script>
-    // 1) Load your exported/sanitized workflow JSON (replace workflow.json if you want)
+    // Make the preview consume all remaining viewport height (header + footer accounted for)
+    function sizePreview() {
+      const preview = document.getElementById('preview');
+      const header = document.querySelector('header');
+      const footer = document.querySelector('footer');
+
+      const pad = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pad')) || 0;
+      const used = header.offsetHeight + footer.offsetHeight + (pad * 0); // padding is on header/footer already
+      const h = Math.max(420, window.innerHeight - used - (pad * 2));     // 2*pad for main block padding
+      preview.style.height = h + 'px';
+    }
+    window.addEventListener('load', sizePreview);
+    window.addEventListener('resize', sizePreview);
+
+    // Load workflow JSON
     fetch('workflow.json')
       .then(r => r.json())
       .then(json => {
@@ -53,15 +82,13 @@
           .setAttribute('workflow', JSON.stringify(json));
       });
 
-    // 2) Browser fullscreen for the preview
+    // Full-screen the entire page for maximum space
     document.getElementById('fullscreen').addEventListener('click', () => {
-      const el = document.getElementById('preview');
+      const el = document.documentElement;
       if (el.requestFullscreen) el.requestFullscreen();
     });
 
-    // 3) Set the editor deep link. Replace with your editor URL:
-    //    - Self-hosted: https://YOUR-N8N-DOMAIN/workflow/<ID>
-    //    - n8n Cloud:  https://app.n8n.cloud/workflow/<ID>  (or your workspace URL)
+    // Deep link to your editor
     const WORKFLOW_EDITOR_URL = 'https://n8n-test.teljoy.io/workflow/Y8kMZ9BJSxwklRWB';
     document.getElementById('editLink').href = WORKFLOW_EDITOR_URL;
   </script>
