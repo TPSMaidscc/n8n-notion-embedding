@@ -180,11 +180,11 @@
     
     class N8nDynamicEditor {
       constructor() {
-        // Load configuration
+        // Load configuration (optional)
         this.config = window.N8N_CONFIG || {};
         
-        this.n8nUrl = this.config.n8nUrl || '';
-        this.apiKey = this.config.apiKey || '';
+        this.n8nUrl = '';
+        this.apiKey = ''; // Always prompt for API key
         this.workflows = [];
         this.currentWorkflow = null;
         this.isConnected = false;
@@ -193,14 +193,13 @@
         
         this.initializeElements();
         this.bindEvents();
+        this.parseUrlParameters();
         this.loadFromLocalStorage();
         this.applyBranding();
         this.initializePreviewSizing();
         
-        // Auto-connect if configured
-        if (this.config.autoConnect && this.n8nUrl) {
-          setTimeout(() => this.connect(), 500);
-        }
+        // Check if workflow was passed via URL parameters
+        this.handleUrlWorkflow();
       }
       
       initializeElements() {
@@ -236,17 +235,106 @@
         });
       }
       
+      parseUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        this.urlParams = {
+          // Direct workflow JSON
+          workflow: urlParams.get('workflow'),
+          // Workflow ID + n8n URL to load from API  
+          workflowId: urlParams.get('workflowId'),
+          n8nUrl: urlParams.get('n8nUrl'),
+          // External workflow JSON URL
+          workflowUrl: urlParams.get('workflowUrl'),
+          // API key (not recommended for security, but supported)
+          apiKey: urlParams.get('apiKey')
+        };
+      }
+      
+      async handleUrlWorkflow() {
+        const params = this.urlParams;
+        
+        // Case 1: Direct workflow JSON in URL
+        if (params.workflow) {
+          try {
+            const workflowData = JSON.parse(decodeURIComponent(params.workflow));
+            this.loadWorkflowFromData(workflowData, 'URL Parameter');
+            this.showStatus('✅ Loaded workflow from URL parameter', 'success');
+          } catch (error) {
+            this.showStatus('❌ Invalid workflow JSON in URL parameter', 'error');
+          }
+        }
+        
+        // Case 2: Load from external JSON URL
+        else if (params.workflowUrl) {
+          try {
+            this.showLoading(true, 'Loading workflow from URL...');
+            const response = await fetch(params.workflowUrl);
+            const workflowData = await response.json();
+            this.loadWorkflowFromData(workflowData, 'External URL');
+            this.showStatus('✅ Loaded workflow from external URL', 'success');
+          } catch (error) {
+            this.showStatus(`❌ Failed to load workflow from URL: ${error.message}`, 'error');
+          } finally {
+            this.showLoading(false);
+          }
+        }
+        
+        // Case 3: Load from n8n API using workflow ID
+        else if (params.workflowId && params.n8nUrl) {
+          this.n8nUrl = params.n8nUrl;
+          this.elements.n8nUrl.value = params.n8nUrl;
+          
+          // Prompt for API key and then load workflow
+          await this.promptForApiKey();
+          if (this.apiKey) {
+            await this.loadWorkflowFromApi(params.workflowId);
+          }
+        }
+      }
+      
+      loadWorkflowFromData(workflowData, source) {
+        this.currentWorkflow = workflowData;
+        this.elements.preview.setAttribute('workflow', JSON.stringify(workflowData));
+        
+        // Enable save button if we have n8n connection
+        if (this.isConnected) {
+          this.elements.saveBtn.disabled = false;
+          this.markAsSaved();
+        }
+        
+        // Set up change detection
+        this.setupChangeDetection();
+        
+        // Update status
+        const workflowName = workflowData.name || workflowData.id || 'Unnamed';
+        this.showStatus(`✅ Loaded workflow "${workflowName}" from ${source}`, 'success');
+      }
+      
+      async loadWorkflowFromApi(workflowId) {
+        try {
+          this.showLoading(true, 'Loading workflow from n8n API...');
+          const workflow = await this.makeApiCall(`/api/v1/workflows/${workflowId}`);
+          this.isConnected = true;
+          this.loadWorkflowFromData(workflow, 'n8n API');
+          this.elements.saveBtn.disabled = false;
+          this.elements.editLink.href = `${this.n8nUrl}/workflow/${workflowId}`;
+        } catch (error) {
+          this.showStatus(`❌ Failed to load workflow from API: ${error.message}`, 'error');
+        } finally {
+          this.showLoading(false);
+        }
+      }
+      
       loadFromLocalStorage() {
-        const savedUrl = localStorage.getItem('n8n-url') || this.config.n8nUrl || '';
-        const savedApiKey = localStorage.getItem('n8n-api-key') || this.config.apiKey || '';
+        // Only load from localStorage if not provided via URL parameters
+        const savedUrl = this.urlParams.n8nUrl || localStorage.getItem('n8n-url') || this.config.n8nUrl || '';
         
         if (savedUrl) {
           this.elements.n8nUrl.value = savedUrl;
           this.n8nUrl = savedUrl;
         }
-        if (savedApiKey) {
-          this.apiKey = savedApiKey;
-        }
+        
+        // Don't auto-load API keys - always prompt for security
       }
       
       applyBranding() {
@@ -285,21 +373,33 @@
         }
         
         this.n8nUrl = url.replace(/\/$/, ''); // Remove trailing slash
-        this.showLoading(true);
+        this.showLoading(true, 'Connecting...');
         this.elements.connectBtn.disabled = true;
         
         try {
-          // First, try to get API key or check if authentication is needed
+          // Always prompt for API key
+          if (!this.apiKey) {
+            await this.promptForApiKey();
+          }
+          
+          // Test connection with API key
           await this.testConnection();
           this.isConnected = true;
           this.saveToLocalStorage();
           await this.loadWorkflows();
           this.showStatus('✅ Connected successfully!', 'success');
           this.enableWorkflowControls();
+          
+          // If we have a workflow from URL parameters, enable save button
+          if (this.currentWorkflow) {
+            this.elements.saveBtn.disabled = false;
+          }
+          
         } catch (error) {
           console.error('Connection failed:', error);
           this.showStatus(`❌ Connection failed: ${error.message}`, 'error');
           this.isConnected = false;
+          this.apiKey = ''; // Clear API key on failed connection
         } finally {
           this.showLoading(false);
           this.elements.connectBtn.disabled = false;
@@ -319,6 +419,7 @@
               method: 'GET',
               headers: {
                 'Accept': 'application/json',
+                'X-N8N-API-KEY': this.apiKey,
                 ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
               }
             });
@@ -326,23 +427,35 @@
             if (response.ok) {
               return endpoint;
             } else if (response.status === 401) {
-              // Need API key
-              await this.promptForApiKey();
-              return await this.testConnection(); // Retry with API key
+              throw new Error('Invalid API key or insufficient permissions');
             }
           } catch (error) {
-            continue; // Try next endpoint
+            if (error.message.includes('API key')) {
+              throw error; // Re-throw API key errors
+            }
+            continue; // Try next endpoint for network errors
           }
         }
-        throw new Error('Could not connect to n8n instance. Check URL and network.');
+        throw new Error('Could not connect to n8n instance. Check URL and network connection.');
       }
       
       async promptForApiKey() {
-        const apiKey = prompt('This n8n instance requires authentication. Please enter your API key:');
+        // Check if API key was provided in URL (not recommended but supported)
+        if (this.urlParams.apiKey) {
+          this.apiKey = this.urlParams.apiKey;
+          this.showStatus('⚠️ Using API key from URL (not recommended for security)', 'warning');
+          return;
+        }
+        
+        // Always prompt for API key for security
+        const apiKey = prompt('Please enter your n8n API key for authentication:');
         if (!apiKey) {
           throw new Error('API key is required for authentication');
         }
         this.apiKey = apiKey;
+        
+        // Don't save API key to localStorage for security
+        this.showStatus('🔐 API key entered (stored securely in memory)', 'success');
       }
       
       async loadWorkflows() {
@@ -424,6 +537,11 @@
           return;
         }
         
+        if (!this.isConnected) {
+          this.showStatus('⚠️ Not connected to n8n instance. Please connect first.', 'warning');
+          return;
+        }
+        
         this.showLoading(true, 'Saving workflow...');
         this.elements.saveBtn.disabled = true;
         
@@ -431,17 +549,51 @@
           // Get current workflow data from the preview component
           const workflowData = JSON.parse(this.elements.preview.getAttribute('workflow') || '{}');
           
-          // Update the workflow via API
-          await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
-            method: 'PUT',
-            body: JSON.stringify(workflowData)
-          });
+          // Case 1: Workflow has an ID - update existing workflow
+          if (this.currentWorkflow.id) {
+            await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
+              method: 'PUT',
+              body: JSON.stringify(workflowData)
+            });
+            this.showStatus('💾 Workflow updated successfully!', 'success');
+          }
+          
+          // Case 2: No ID - try to find by name or create new workflow
+          else {
+            const existingWorkflow = this.workflows.find(w => w.name === workflowData.name);
+            
+            if (existingWorkflow) {
+              // Update existing workflow with same name
+              const confirm = window.confirm(`A workflow named "${workflowData.name}" already exists. Update it?`);
+              if (confirm) {
+                await this.makeApiCall(`/api/v1/workflows/${existingWorkflow.id}`, {
+                  method: 'PUT',
+                  body: JSON.stringify({...workflowData, id: existingWorkflow.id})
+                });
+                this.currentWorkflow.id = existingWorkflow.id;
+                this.showStatus('💾 Existing workflow updated successfully!', 'success');
+              } else {
+                return; // User cancelled
+              }
+            } else {
+              // Create new workflow
+              const newWorkflow = await this.makeApiCall('/api/v1/workflows', {
+                method: 'POST',
+                body: JSON.stringify(workflowData)
+              });
+              this.currentWorkflow.id = newWorkflow.id;
+              this.showStatus('💾 New workflow created successfully!', 'success');
+            }
+          }
           
           // Update current workflow to reflect saved state
-          this.currentWorkflow = workflowData;
+          this.currentWorkflow = {...this.currentWorkflow, ...workflowData};
           this.markAsSaved();
           
-          this.showStatus('💾 Workflow saved successfully!', 'success');
+          // Update edit link if we have an ID now
+          if (this.currentWorkflow.id) {
+            this.elements.editLink.href = `${this.n8nUrl}/workflow/${this.currentWorkflow.id}`;
+          }
           
         } catch (error) {
           console.error('Failed to save workflow:', error);
@@ -585,7 +737,10 @@
         const headers = {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` }),
+          ...(this.apiKey && { 
+            'X-N8N-API-KEY': this.apiKey,
+            'Authorization': `Bearer ${this.apiKey}` 
+          }),
           ...options.headers
         };
         
@@ -595,7 +750,13 @@
         });
         
         if (!response.ok) {
-          const errorText = await response.text();
+          let errorText;
+          try {
+            const errorJson = await response.json();
+            errorText = errorJson.message || JSON.stringify(errorJson);
+          } catch {
+            errorText = await response.text();
+          }
           throw new Error(`API call failed (${response.status}): ${errorText}`);
         }
         

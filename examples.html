@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>n8n Dynamic Workflow Editor - Usage Examples</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        h1 { color: #ff6d5a; }
+        h2 { color: #4f46e5; margin-top: 40px; }
+        .example { background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .url { background: #e9ecef; padding: 10px; border-radius: 4px; font-family: monospace; word-break: break-all; }
+        .button { display: inline-block; background: #ff6d5a; color: white; padding: 10px 16px; text-decoration: none; border-radius: 6px; margin: 5px; }
+        .button:hover { background: #e55a47; }
+        code { background: #e9ecef; padding: 2px 6px; border-radius: 4px; }
+        .note { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 6px; margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 n8n Dynamic Workflow Editor</h1>
+        <p><strong>Usage Examples & URL Parameters</strong></p>
+
+        <h2>📋 Method 1: Direct Workflow JSON</h2>
+        <div class="example">
+            <p>Pass workflow JSON directly in the URL parameter:</p>
+            <div class="url">
+                https://yourdomain.com/n8n-editor/?workflow={"nodes":[...],"connections":{}}
+            </div>
+            <p><strong>Use Case:</strong> When you have workflow JSON and want to display it immediately</p>
+            
+            <a href="?workflow=%7B%22nodes%22%3A%5B%7B%22parameters%22%3A%7B%7D%2C%22id%22%3A%22start%22%2C%22name%22%3A%22Start%22%2C%22type%22%3A%22n8n-nodes-base.manualTrigger%22%2C%22position%22%3A%5B240%2C300%5D%7D%5D%2C%22connections%22%3A%7B%7D%7D" class="button">
+                📝 Try Example: Simple Start Node
+            </a>
+        </div>
+
+        <h2>🌐 Method 2: External Workflow JSON URL</h2>
+        <div class="example">
+            <p>Load workflow JSON from an external URL:</p>
+            <div class="url">
+                https://yourdomain.com/n8n-editor/?workflowUrl=https://example.com/workflow.json
+            </div>
+            <p><strong>Use Case:</strong> When workflow JSON is hosted elsewhere (GitHub, your API, etc.)</p>
+            
+            <a href="?workflowUrl=https://raw.githubusercontent.com/tpsmaidscc/n8n-notion-embedding/main/workflow.json" class="button">
+                🔗 Try Example: Load from GitHub
+            </a>
+        </div>
+
+        <h2>🔗 Method 3: Load from n8n API</h2>
+        <div class="example">
+            <p>Load workflow directly from your n8n instance:</p>
+            <div class="url">
+                https://yourdomain.com/n8n-editor/?workflowId=123&n8nUrl=https://your-n8n.com
+            </div>
+            <p><strong>Use Case:</strong> When you want to edit an existing workflow from your n8n instance</p>
+            
+            <div class="note">
+                <strong>📝 Note:</strong> You'll be prompted for your API key when using this method.
+            </div>
+
+            <!-- Example with your n8n instance -->
+            <a href="?workflowId=Y8kMZ9BJSxwklRWB&n8nUrl=https://n8n-test.teljoy.io" class="button">
+                🎯 Try Example: Your n8n Instance
+            </a>
+        </div>
+
+        <h2>🔧 URL Parameters Reference</h2>
+        <div class="example">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #e9ecef;">
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Parameter</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Description</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Example</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>workflow</code></td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">Direct workflow JSON (URL encoded)</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>?workflow={"nodes":[]}</code></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>workflowUrl</code></td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">URL to fetch workflow JSON from</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>?workflowUrl=https://example.com/wf.json</code></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>workflowId</code></td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">n8n workflow ID to load via API</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>?workflowId=123</code></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>n8nUrl</code></td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">n8n instance URL (required with workflowId)</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>?n8nUrl=https://your-n8n.com</code></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>apiKey</code></td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;">n8n API key (not recommended for security)</td>
+                        <td style="padding: 10px; border: 1px solid #dee2e6;"><code>?apiKey=your-key</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>🎯 Notion Embedding Examples</h2>
+        <div class="example">
+            <p>Perfect URLs for embedding in Notion:</p>
+            
+            <h3>Display a specific workflow:</h3>
+            <div class="url">
+                https://tpsmaidscc.github.io/n8n-notion-embedding/?workflowId=Y8kMZ9BJSxwklRWB&n8nUrl=https://n8n-test.teljoy.io
+            </div>
+
+            <h3>Load workflow from your GitHub repo:</h3>
+            <div class="url">
+                https://tpsmaidscc.github.io/n8n-notion-embedding/?workflowUrl=https://raw.githubusercontent.com/youruser/yourrepo/main/workflow.json
+            </div>
+
+            <p><strong>How to embed in Notion:</strong></p>
+            <ol>
+                <li>Copy one of the URLs above (customize with your data)</li>
+                <li>In Notion, type <code>/embed</code></li>
+                <li>Paste the URL</li>
+                <li>Resize the embed block as needed</li>
+                <li>You can now view and edit workflows directly in Notion! 🎉</li>
+            </ol>
+        </div>
+
+        <h2>🛡️ Security Best Practices</h2>
+        <div class="example">
+            <div class="note">
+                <strong>⚠️ Important Security Notes:</strong>
+                <ul>
+                    <li><strong>Never include API keys in URLs</strong> - they'll be visible in browser history, server logs, and can be accidentally shared</li>
+                    <li><strong>Always use HTTPS</strong> for production deployments</li>
+                    <li><strong>Use read-only API keys</strong> when possible</li>
+                    <li><strong>Consider IP restrictions</strong> on your n8n instance</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>🔙 Navigation</h2>
+        <a href="index.html" class="button">← Back to Editor</a>
+        <a href="https://github.com/tpsmaidscc/n8n-notion-embedding" class="button">📖 Documentation</a>
+    </div>
+
+    <script>
+        // Add click handlers to copy URLs
+        document.querySelectorAll('.url').forEach(el => {
+            el.style.cursor = 'pointer';
+            el.title = 'Click to copy URL';
+            el.addEventListener('click', () => {
+                navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+                    const original = el.textContent;
+                    el.textContent = '✓ Copied to clipboard!';
+                    el.style.background = '#d4edda';
+                    setTimeout(() => {
+                        el.textContent = original;
+                        el.style.background = '#e9ecef';
+                    }, 2000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

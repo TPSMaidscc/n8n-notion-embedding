@@ -14,21 +14,35 @@ Perfect for embedding in Notion or any other platform that supports iframe embed
 Quick Start
 ===========
 
-## Method 1: Dynamic Mode (Recommended)
+## Method 1: URL Parameters (Recommended & New!)
+
+You can now pass workflows directly via URL parameters! Perfect for Notion embedding:
+
+**Option A: Direct workflow JSON**
+```
+https://your-site.com/n8n-editor/?workflow={"nodes":[...],"connections":{}}
+```
+
+**Option B: Load from external URL**
+```
+https://your-site.com/n8n-editor/?workflowUrl=https://github.com/user/repo/raw/main/workflow.json
+```
+
+**Option C: Load from n8n API**
+```
+https://your-site.com/n8n-editor/?workflowId=123&n8nUrl=https://your-n8n.com
+```
+
+## Method 2: Interactive Mode
 
 1) Deploy to any static host (see hosting options below)
 
 2) Open your deployed site and:
    - Enter your n8n instance URL (e.g., https://your-n8n-instance.com)
    - Click "Connect" 
-   - Enter your API key when prompted (if required)
+   - Enter your API key when prompted
    - Select any workflow from the dropdown
    - Start editing directly in the interface!
-
-3) Optional: Create a config.js file for automatic setup:
-   - Copy config.example.js to config.js
-   - Update with your n8n instance details
-   - The editor will auto-connect on page load
 
 ## Method 2: Static Mode (Legacy)
 
