@@ -205,12 +205,12 @@
             <input type="radio" name="editorMode" value="preview" checked style="margin: 0;">
             👁️ Preview Only
           </label>
-          <label style="display: flex; align-items: center; gap: 6px; color: #3b82f6; font-size: 13px; cursor: pointer;" title="Open n8n editor in popup window">
-            <input type="radio" name="editorMode" value="popup" style="margin: 0;">
-            ✏️ Popup Editor
+          <label style="display: flex; align-items: center; gap: 6px; color: #3b82f6; font-size: 13px; cursor: pointer;" title="Enter API key for editing workflows">
+            <input type="radio" name="editorMode" value="apikey" style="margin: 0;">
+            🔑 API Key Mode
           </label>
           <div style="color: #6b7280; font-size: 12px; font-style: italic; margin-left: 8px;">
-            Opens n8n editor in a dedicated popup window
+            Enter your n8n API key for workflow editing
           </div>
         </div>
       </div>
@@ -218,20 +218,58 @@
       <!-- Preview Component (Default) -->
       <n8n-demo id="preview" frame="false" style="display: block;"></n8n-demo>
       
-      <!-- Popup Editor Placeholder (Hidden by default) -->
-      <div id="popupEditorContainer" style="display: none; padding: 40px; text-align: center; background: #0b1220; color: #e2e8f0;">
-        <div style="font-size: 18px; margin-bottom: 20px;">🚀 Popup Editor Mode</div>
-        <div style="font-size: 14px; margin-bottom: 24px; color: #9ca3af;">
-          The n8n editor will open in a dedicated popup window for the best editing experience.
+      <!-- API Key Mode (Hidden by default) -->
+      <div id="apiKeyContainer" style="display: none; padding: 40px; background: #0b1220; color: #e2e8f0;">
+        <div style="text-align: center; font-size: 18px; margin-bottom: 20px;">🔑 API Key Mode</div>
+        <div style="text-align: center; font-size: 14px; margin-bottom: 24px; color: #9ca3af;">
+          Enter your n8n API key to enable workflow editing and management
         </div>
-        <div id="popupEditorInfo" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-          <div style="color: #3b82f6; font-weight: 500; margin-bottom: 8px;">📝 Current Workflow</div>
-          <div id="popupWorkflowName" style="font-size: 16px; margin-bottom: 8px;">No workflow selected</div>
-          <div style="font-size: 13px; color: #9ca3af;">Changes made in the popup will be automatically saved to your n8n instance</div>
+        
+        <!-- Current API Key Status -->
+        <div id="apiKeyStatus" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 16px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+          <div style="color: #ef4444; font-weight: 500; margin-bottom: 8px;">🔒 Not Connected</div>
+          <div style="font-size: 13px; color: #9ca3af;">Please enter your API key to access editing features</div>
         </div>
-        <button id="openPopupEditorBtn" class="btn btn-primary" style="font-size: 14px; padding: 12px 24px;">
-          <span>🚀</span> Open in Popup Window
-        </button>
+        
+        <!-- API Key Input -->
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #e2e8f0;">
+            n8n API Key:
+          </label>
+          <input type="password" 
+                 id="apiKeyInput" 
+                 placeholder="Enter your n8n API key..." 
+                 style="width: 100%; padding: 12px; background: #1f2937; border: 1px solid #374151; border-radius: 8px; color: #e2e8f0; font-size: 14px; font-family: 'JetBrains Mono', monospace;">
+          <div style="font-size: 12px; color: #9ca3af; margin-top: 6px;">
+            Your API key is only stored locally and never sent to external servers
+          </div>
+        </div>
+        
+        <!-- Connect Button -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <button id="connectApiKeyBtn" class="btn btn-primary" style="font-size: 14px; padding: 12px 24px;">
+            <span>🔗</span> Connect with API Key
+          </button>
+        </div>
+        
+        <!-- Current Workflow Info -->
+        <div id="apiKeyWorkflowInfo" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 16px; border-radius: 8px; display: none;">
+          <div style="color: #3b82f6; font-weight: 500; margin-bottom: 8px; text-align: center;">📝 Current Workflow</div>
+          <div id="apiKeyWorkflowName" style="font-size: 16px; margin-bottom: 8px; text-align: center;">No workflow selected</div>
+          <div style="font-size: 13px; color: #9ca3af; text-align: center;">API key connected - you can now edit workflows</div>
+        </div>
+        
+        <!-- Instructions -->
+        <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 16px; border-radius: 8px; margin-top: 20px;">
+          <div style="color: #f59e0b; font-weight: 500; margin-bottom: 8px; text-align: center;">📋 How to get your API Key:</div>
+          <ol style="font-size: 13px; color: #e2e8f0; text-align: left; margin: 0; padding-left: 20px;">
+            <li>Go to your n8n instance (n8n-test.teljoy.io)</li>
+            <li>Click on your profile (top right)</li>
+            <li>Go to "Personal API tokens"</li>
+            <li>Click "Create token"</li>
+            <li>Copy the generated token and paste it above</li>
+          </ol>
+        </div>
       </div>
     </div>
   </main>
@@ -285,9 +323,12 @@
           saveBtn: document.getElementById('saveBtn'),
           statusMsg: document.getElementById('statusMsg'),
           preview: document.getElementById('preview'),
-          popupEditorContainer: document.getElementById('popupEditorContainer'),
-          popupWorkflowName: document.getElementById('popupWorkflowName'),
-          openPopupEditorBtn: document.getElementById('openPopupEditorBtn'),
+          apiKeyContainer: document.getElementById('apiKeyContainer'),
+          apiKeyInput: document.getElementById('apiKeyInput'),
+          apiKeyStatus: document.getElementById('apiKeyStatus'),
+          apiKeyWorkflowInfo: document.getElementById('apiKeyWorkflowInfo'),
+          apiKeyWorkflowName: document.getElementById('apiKeyWorkflowName'),
+          connectApiKeyBtn: document.getElementById('connectApiKeyBtn'),
           previewHeader: document.querySelector('.preview-header'),
           editorModeRadios: document.querySelectorAll('input[name="editorMode"]'),
           fullscreenBtn: document.getElementById('fullscreen'),
@@ -331,8 +372,13 @@
           radio.addEventListener('change', (e) => this.switchEditorMode(e.target.value));
         });
         
-        // Popup editor button
-        this.elements.openPopupEditorBtn.addEventListener('click', () => this.openPopupEditor());
+        // API key functionality
+        this.elements.connectApiKeyBtn.addEventListener('click', () => this.connectWithApiKey());
+        this.elements.apiKeyInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            this.connectWithApiKey();
+          }
+        });
         
         // Auto-save on workflow changes (debounced)
         let saveTimeout;
@@ -346,9 +392,9 @@
         console.log(`🎛️ Switching to ${mode} mode`);
         
         if (mode === 'preview') {
-          // Show preview, hide popup container
+          // Show preview, hide API key container
           this.elements.preview.style.display = 'block';
-          this.elements.popupEditorContainer.style.display = 'none';
+          this.elements.apiKeyContainer.style.display = 'none';
           this.showStatus('👁️ Switched to Preview Only mode', 'info');
           
           // Re-load current workflow in preview if available
@@ -356,73 +402,104 @@
             this.loadWorkflowFromData(this.currentWorkflow, 'Mode Switch - Preview');
           }
           
-        } else if (mode === 'popup') {
-          // Show popup container, hide preview
+        } else if (mode === 'apikey') {
+          // Show API key container, hide preview
           this.elements.preview.style.display = 'none';
-          this.elements.popupEditorContainer.style.display = 'block';
-          this.showStatus('🚀 Switched to Popup Editor mode', 'info');
+          this.elements.apiKeyContainer.style.display = 'block';
+          this.showStatus('🔑 Switched to API Key mode', 'info');
           
-          // Update popup editor info
-          if (this.currentWorkflow && this.isConnected) {
-            this.elements.popupWorkflowName.textContent = `"${this.currentWorkflow.name}" (ID: ${this.currentWorkflow.id})`;
-            this.elements.openPopupEditorBtn.disabled = false;
-          } else {
-            this.elements.popupWorkflowName.textContent = 'Connect to n8n and select a workflow first';
-            this.elements.openPopupEditorBtn.disabled = true;
-            this.showStatus('⚠️ Connect to n8n and select a workflow to use Popup Editor', 'warning');
-          }
+          // Update API key interface based on connection status
+          this.updateApiKeyInterface();
         }
       }
       
-      openPopupEditor() {
-        if (!this.currentWorkflow || !this.isConnected) {
-          this.showStatus('❌ No workflow selected or not connected to n8n', 'error');
+      connectWithApiKey() {
+        const apiKey = this.elements.apiKeyInput.value.trim();
+        
+        if (!apiKey) {
+          this.showStatus('❌ Please enter an API key', 'error');
           return;
         }
         
-        console.log('🚀 Opening popup editor for workflow:', this.currentWorkflow.name);
+        console.log('🔑 Attempting to connect with provided API key...');
         
-        // Get clean n8n URL (without proxy)
-        const cleanUrl = this.n8nUrl.includes('corsproxy.io') 
-          ? decodeURIComponent(this.n8nUrl.split('corsproxy.io/?')[1]) 
-          : this.n8nUrl;
-          
-        // Build the editor URL
-        const editorUrl = `${cleanUrl}/workflow/${this.currentWorkflow.id}`;
+        // Store API key temporarily for testing
+        this.tempApiKey = apiKey;
         
-        // Open in popup window with optimal settings
-        const popup = window.open(
-          editorUrl,
-          'n8nEditor',
-          'width=1400,height=900,scrollbars=yes,resizable=yes,status=no,menubar=no,toolbar=no'
-        );
-        
-        if (popup) {
-          this.showStatus(`🚀 Opened "${this.currentWorkflow.name}" in popup editor`, 'success');
-          console.log('✅ Popup editor opened successfully');
+        // Test the connection with the API key
+        this.testApiKeyConnection(apiKey);
+      }
+      
+      async testApiKeyConnection(apiKey) {
+        try {
+          this.showStatus('🔄 Testing API key connection...', 'info');
           
-          // Focus the popup window
-          popup.focus();
-          
-          // Optional: Listen for popup close and refresh workflow
-          const checkClosed = setInterval(() => {
-            if (popup.closed) {
-              clearInterval(checkClosed);
-              console.log('📝 Popup editor closed, refreshing workflow...');
-              this.showStatus('📝 Popup editor closed. Refreshing workflow data...', 'info');
-              
-              // Refresh the current workflow from API
-              if (this.currentWorkflow && this.isConnected) {
-                setTimeout(() => {
-                  this.loadWorkflow(this.currentWorkflow.id);
-                }, 1000); // Small delay to allow n8n to save changes
-              }
+          // Test API call with the provided key
+          const testUrl = `${this.n8nUrl}/api/v1/workflows`;
+          const response = await fetch(testUrl, {
+            headers: {
+              'X-N8N-API-KEY': apiKey
             }
-          }, 1000);
+          });
+          
+          if (response.ok) {
+            // Connection successful
+            console.log('✅ API key connection successful');
+            this.apiKey = apiKey; // Store the working API key
+            this.isConnected = true;
+            
+            this.showStatus('✅ API key connected successfully!', 'success');
+            this.updateApiKeyInterface();
+            
+            // Load workflows with the new API key
+            this.loadWorkflows();
+            
+          } else {
+            throw new Error(`API responded with status ${response.status}`);
+          }
+          
+        } catch (error) {
+          console.log('❌ API key connection failed:', error);
+          this.showStatus('❌ API key connection failed. Please check your key.', 'error');
+          this.updateApiKeyInterface();
+        }
+      }
+      
+      updateApiKeyInterface() {
+        if (this.isConnected && this.apiKey) {
+          // Connected state
+          this.elements.apiKeyStatus.innerHTML = `
+            <div style="color: #22c55e; font-weight: 500; margin-bottom: 8px;">✅ Connected</div>
+            <div style="font-size: 13px; color: #9ca3af;">API key is working - you can now edit workflows</div>
+          `;
+          this.elements.apiKeyStatus.style.background = 'rgba(34, 197, 94, 0.1)';
+          this.elements.apiKeyStatus.style.borderColor = 'rgba(34, 197, 94, 0.2)';
+          
+          // Show workflow info if available
+          if (this.currentWorkflow) {
+            this.elements.apiKeyWorkflowInfo.style.display = 'block';
+            this.elements.apiKeyWorkflowName.textContent = `"${this.currentWorkflow.name}" (ID: ${this.currentWorkflow.id})`;
+          }
+          
+          // Update connect button
+          this.elements.connectApiKeyBtn.innerHTML = '<span>🔄</span> Reconnect';
+          this.elements.connectApiKeyBtn.disabled = false;
           
         } else {
-          this.showStatus('❌ Failed to open popup. Check if popups are blocked.', 'error');
-          console.log('❌ Popup blocked or failed to open');
+          // Disconnected state
+          this.elements.apiKeyStatus.innerHTML = `
+            <div style="color: #ef4444; font-weight: 500; margin-bottom: 8px;">🔒 Not Connected</div>
+            <div style="font-size: 13px; color: #9ca3af;">Please enter your API key to access editing features</div>
+          `;
+          this.elements.apiKeyStatus.style.background = 'rgba(239, 68, 68, 0.1)';
+          this.elements.apiKeyStatus.style.borderColor = 'rgba(239, 68, 68, 0.2)';
+          
+          // Hide workflow info
+          this.elements.apiKeyWorkflowInfo.style.display = 'none';
+          
+          // Update connect button
+          this.elements.connectApiKeyBtn.innerHTML = '<span>🔗</span> Connect with API Key';
+          this.elements.connectApiKeyBtn.disabled = false;
         }
       }
       
@@ -681,11 +758,10 @@
           this.n8nUrl = params.n8nUrl;
           this.elements.n8nUrl.value = params.n8nUrl;
           
-          // Prompt for API key and then load workflow
-          await this.promptForApiKey();
-          if (this.apiKey) {
-            await this.loadWorkflowFromApi(params.workflowId);
-          }
+          // Switch to API key mode for workflow loading
+          document.querySelector('input[name="editorMode"][value="apikey"]').checked = true;
+          this.switchEditorMode('apikey');
+          this.showStatus('⚠️ Please enter your API key to load the requested workflow', 'warning');
         }
       }
       
@@ -777,12 +853,11 @@
             }
           }, 1000);
           
-        } else if (currentMode === 'popup') {
-          // Update popup editor info
-          console.log('9. Updating popup editor info...');
-          this.elements.popupWorkflowName.textContent = `"${workflowData.name}" (ID: ${workflowData.id})`;
-          this.elements.openPopupEditorBtn.disabled = false;
-          this.showStatus(`✅ Workflow ready for popup editing: "${workflowData.name}"`, 'success');
+        } else if (currentMode === 'apikey') {
+          // Update API key interface info
+          console.log('9. Updating API key mode info...');
+          this.updateApiKeyInterface(); // This will show workflow info if connected
+          this.showStatus(`✅ Workflow ready for API editing: "${workflowData.name}"`, 'success');
         }
         
         // Enable save button if we have n8n connection
@@ -920,9 +995,13 @@
         this.elements.connectBtn.disabled = true;
         
         try {
-          // Always prompt for API key
+          // Check if API key is available
           if (!this.apiKey) {
-            await this.promptForApiKey();
+            // Switch to API key mode
+            document.querySelector('input[name="editorMode"][value="apikey"]').checked = true;
+            this.switchEditorMode('apikey');
+            this.showStatus('⚠️ Please enter your API key to connect to n8n', 'warning');
+            return;
           }
           
           this.showLoading(true, 'Testing connection...');
