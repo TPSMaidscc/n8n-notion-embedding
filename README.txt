@@ -60,7 +60,7 @@ https://your-site.com/n8n-editor/?workflowId=123&n8nUrl=https://your-n8n.com
 - Create a new repo and push these files
 - Go to repo Settings → Pages
 - Set source to "Deploy from branch", branch = main, folder = / (root)
-- Your site will be live at https://<username>.github.io/<repo>/
+      - Your site will be live at https://<username>.github.io/<repo>/
 
 ### Netlify (Free)
 - Go to app.netlify.com → Add new site → Deploy manually

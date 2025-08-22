@@ -35,12 +35,11 @@
     
     /* Configuration Panel */
     .config-panel { padding: var(--pad); background: rgba(17, 24, 39, 0.9); border-bottom: 1px solid #374151; }
-    .config-content { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; }
-    .config-input { 
-      padding: 10px 14px; background: #1f2937; border: 1px solid #374151; 
-      border-radius: 8px; color: #e2e8f0; font-size: 14px; min-width: 200px;
+    .config-content { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .api-info { 
+      color: #94a3b8; font-size: 14px; display: flex; align-items: center; gap: 8px;
     }
-    .config-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 109, 90, 0.1); }
+    .api-info strong { color: var(--primary); }
     
     /* Buttons */
     .btn {
@@ -74,10 +73,18 @@
     .workflow-container { 
       position: relative; border-radius: 14px; overflow: hidden; 
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      min-height: 820px; /* Account for header + component height */
     }
+    .preview-header {
+      background: rgba(239, 68, 68, 0.1); border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+      padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+      color: #ef4444; font-size: 14px;
+    }
+    .preview-status { font-weight: 500; }
+    .preview-header > div:last-child { display: flex; gap: 8px; }
     n8n-demo {
       width: 100%; height: 100%; display: block; 
-      background: #0b1220; border: 1px solid #334155; min-height: 500px;
+      background: #0b1220; border: 1px solid #334155; min-height: 800px;
     }
     
     /* Status and loading */
@@ -126,19 +133,23 @@
     </div>
   </header>
 
-  <!-- Configuration Panel -->
-  <div class="config-panel">
-    <div class="config-content">
-      <input type="text" id="n8nUrl" class="config-input" placeholder="Enter your n8n instance URL (e.g., https://your-n8n.com)" />
-      <button id="connectBtn" class="btn btn-primary">
-        <span>🔗</span> Connect
-      </button>
-      <div class="loading">
-        <div class="spinner"></div>
-        <span>Connecting...</span>
+      <!-- API Key Panel -->
+    <div class="config-panel">
+      <div class="config-content">
+        <div class="api-info">
+          <span>📡 Connected to: <strong>n8n-test.teljoy.io</strong></span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <button id="connectBtn" class="btn btn-primary">
+            <span>🔑</span> Enter API Key & Connect
+          </button>
+        </div>
+        <div class="loading">
+          <div class="spinner"></div>
+          <span>Connecting...</span>
+        </div>
       </div>
     </div>
-  </div>
 
   <main>
     <!-- Workflow Selector -->
@@ -159,8 +170,22 @@
       <div id="statusMsg" class="status" style="display: none; margin-top: 12px;"></div>
     </div>
 
-    <!-- Workflow Viewer -->
+        <!-- Workflow Viewer -->
     <div class="workflow-container">
+      <div class="preview-header" style="display: none;">
+        <div class="preview-status">⚠️ Preview failed to load</div>
+        <div>
+          <button id="refreshPreviewBtn" class="btn btn-outline">
+            <span>🔄</span> Refresh Preview
+          </button>
+          <button id="testLegacyBtn" class="btn btn-outline">
+            <span>🧪</span> Test Legacy
+          </button>
+          <button id="hardResetBtn" class="btn btn-outline">
+            <span>🔧</span> Hard Reset
+          </button>
+        </div>
+      </div>
     <n8n-demo id="preview" frame="true"></n8n-demo>
     </div>
   </main>
@@ -183,7 +208,8 @@
         // Load configuration (optional)
         this.config = window.N8N_CONFIG || {};
         
-        this.n8nUrl = '';
+        // Hardcode the n8n instance URL
+        this.n8nUrl = 'https://corsproxy.io/?https://n8n-test.teljoy.io';
         this.apiKey = ''; // Always prompt for API key
         this.workflows = [];
         this.currentWorkflow = null;
@@ -194,7 +220,6 @@
         this.initializeElements();
         this.bindEvents();
         this.parseUrlParameters();
-        this.loadFromLocalStorage();
         this.applyBranding();
         this.initializePreviewSizing();
         
@@ -204,14 +229,17 @@
       
       initializeElements() {
         this.elements = {
-          n8nUrl: document.getElementById('n8nUrl'),
           connectBtn: document.getElementById('connectBtn'),
           loading: document.querySelector('.loading'),
           workflowSelect: document.getElementById('workflowSelect'),
           refreshBtn: document.getElementById('refreshBtn'),
+          refreshPreviewBtn: document.getElementById('refreshPreviewBtn'),
+          testLegacyBtn: document.getElementById('testLegacyBtn'),
+          hardResetBtn: document.getElementById('hardResetBtn'),
           saveBtn: document.getElementById('saveBtn'),
           statusMsg: document.getElementById('statusMsg'),
           preview: document.getElementById('preview'),
+          previewHeader: document.querySelector('.preview-header'),
           fullscreenBtn: document.getElementById('fullscreen'),
           editLink: document.getElementById('editLink')
         };
@@ -219,13 +247,34 @@
       
       bindEvents() {
         this.elements.connectBtn.addEventListener('click', () => this.connect());
-        this.elements.workflowSelect.addEventListener('change', (e) => this.loadWorkflow(e.target.value));
+        this.elements.workflowSelect.addEventListener('change', (e) => {
+          console.log('🔄 WORKFLOW SELECTION CHANGED - FORCING FULL REFRESH');
+          this.forcePreviewRefresh();
+          this.loadWorkflow(e.target.value);
+        });
         this.elements.refreshBtn.addEventListener('click', () => this.refreshWorkflows());
+        this.elements.refreshPreviewBtn.addEventListener('click', () => this.refreshPreview());
+        this.elements.testLegacyBtn.addEventListener('click', () => this.testLegacyFallback());
+        this.elements.hardResetBtn.addEventListener('click', () => {
+          if (this.currentWorkflow) {
+            // Use the same cleaned format as the main loading function
+            const cleanedWorkflow = {
+              nodes: this.currentWorkflow.nodes || [],
+              connections: this.currentWorkflow.connections || {}
+            };
+            if (this.currentWorkflow.pinData && Object.keys(this.currentWorkflow.pinData).length > 0) {
+              cleanedWorkflow.pinData = this.currentWorkflow.pinData;
+            }
+            if (this.currentWorkflow.meta && this.currentWorkflow.meta.instanceId) {
+              cleanedWorkflow.meta = { instanceId: this.currentWorkflow.meta.instanceId };
+            }
+            this.hardResetComponent(cleanedWorkflow);
+          } else {
+            this.showStatus('⚠️ No workflow loaded to reset with', 'warning');
+          }
+        });
         this.elements.saveBtn.addEventListener('click', () => this.saveWorkflow());
         this.elements.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
-        this.elements.n8nUrl.addEventListener('keypress', (e) => {
-          if (e.key === 'Enter') this.connect();
-        });
         
         // Auto-save on workflow changes (debounced)
         let saveTimeout;
@@ -233,6 +282,202 @@
           clearTimeout(saveTimeout);
           saveTimeout = setTimeout(() => this.autoSave(), 2000);
         });
+      }
+      
+      forcePreviewRefresh() {
+        console.log('💥 ===== FORCING COMPLETE PREVIEW REFRESH =====');
+        
+        // Step 1: Show loading state
+        this.hidePreviewError();
+        this.showStatus('🔄 Refreshing preview...', 'info');
+        
+        // Step 2: Completely destroy and recreate the component
+        const container = this.elements.preview.parentNode;
+        const oldElement = this.elements.preview;
+        
+        // Remove old element completely
+        container.removeChild(oldElement);
+        
+        // Step 3: Create brand new component
+        const newElement = document.createElement('n8n-demo');
+        newElement.id = 'preview';
+        newElement.setAttribute('frame', 'true');
+        
+        // Step 4: Add it back to the DOM
+        container.appendChild(newElement);
+        
+        // Step 5: Update our reference
+        this.elements.preview = newElement;
+        
+        // Step 6: Re-bind events for auto-save
+        this.bindPreviewEvents();
+        
+        console.log('✅ Preview component completely refreshed and ready');
+      }
+      
+      checkComponentState(checkName) {
+        const previewElement = this.elements.preview;
+        const hasWorkflowAttribute = previewElement.hasAttribute('workflow');
+        const workflowValue = previewElement.getAttribute('workflow');
+        
+        console.log(`--- ${checkName} ---`);
+        console.log('Component basic state:');
+        console.log('  - Has workflow attribute:', hasWorkflowAttribute);
+        console.log('  - Workflow attribute length:', workflowValue ? workflowValue.length : 0);
+        console.log('  - Element innerHTML length:', previewElement.innerHTML.length);
+        console.log('  - Shadow root exists:', !!previewElement.shadowRoot);
+        
+        let shadowContent = '';
+        let hasCanvas = false;
+        let hasErrors = false;
+        let errorMessages = [];
+        
+        if (previewElement.shadowRoot) {
+          shadowContent = previewElement.shadowRoot.innerHTML;
+          console.log('  - Shadow root innerHTML length:', shadowContent.length);
+          
+          // Check for canvas or svg elements (signs of successful render)
+          const canvasElements = previewElement.shadowRoot.querySelectorAll('canvas, svg, .workflow-canvas');
+          hasCanvas = canvasElements.length > 0;
+          console.log('  - Has canvas/svg elements:', hasCanvas, `(found ${canvasElements.length})`);
+          
+          // Check for any error indicators
+          const errorSelectors = [
+            '[data-test-id*="error"]',
+            '.error',
+            '[class*="error"]',
+            '[class*="Error"]',
+            '.n8n-toast--error',
+            '.message-error',
+            '.workflow-error'
+          ];
+          
+          errorSelectors.forEach(selector => {
+            const elements = previewElement.shadowRoot.querySelectorAll(selector);
+            if (elements.length > 0) {
+              hasErrors = true;
+              elements.forEach((el, i) => {
+                const msg = el.textContent || el.innerHTML || `[${selector} element ${i}]`;
+                errorMessages.push(msg.trim().substring(0, 200));
+                console.log(`  ❌ Error found (${selector}):`, msg.trim().substring(0, 100));
+              });
+            }
+          });
+          
+          // Look for "Could not load" message specifically
+          if (shadowContent.includes('Could not load')) {
+            hasErrors = true;
+            errorMessages.push('Found "Could not load" message in shadow content');
+            console.log('  ❌ Found "Could not load" message in shadow content');
+          }
+        }
+        
+        // Overall success assessment
+        const isSuccess = hasWorkflowAttribute && 
+                         shadowContent.length > 500 && 
+                         (hasCanvas || previewElement.innerHTML.length > 100) && 
+                         !hasErrors;
+        
+        console.log('Component assessment:');
+        console.log('  - Overall success:', isSuccess);
+        console.log('  - Has content:', shadowContent.length > 500);
+        console.log('  - Has visual elements:', hasCanvas);
+        console.log('  - Has errors:', hasErrors);
+        
+        if (hasErrors && errorMessages.length > 0) {
+          console.log('  - Error messages:', errorMessages);
+        }
+        
+        // Try to get component's internal state if possible
+        if (previewElement.workflow) {
+          console.log('  - Component internal workflow exists');
+        }
+        
+        return isSuccess;
+      }
+      
+      hardResetComponent(workflowData) {
+        console.log('=== HARD RESET: Recreating n8n-demo component ===');
+        
+        const container = this.elements.preview.parentNode;
+        const oldElement = this.elements.preview;
+        
+        // Create completely new component
+        const newElement = document.createElement('n8n-demo');
+        newElement.id = 'preview';
+        newElement.setAttribute('frame', 'true');
+        
+        // Replace the old component
+        container.replaceChild(newElement, oldElement);
+        
+        // Update our reference
+        this.elements.preview = newElement;
+        
+        console.log('  - Created new n8n-demo element');
+        console.log('  - Setting workflow data on fresh component');
+        
+        // Set workflow on the fresh component
+        setTimeout(() => {
+          newElement.setAttribute('workflow', JSON.stringify(workflowData));
+          console.log('  - Workflow set on new component');
+          
+          // Check if this worked
+          setTimeout(() => {
+            console.log('=== HARD RESET CHECK (2s) ===');
+            const success = this.checkComponentState('Hard reset check');
+            
+            if (success) {
+              console.log('✅ Hard reset successful! Component is now working.');
+              this.hidePreviewError();
+              // Re-bind events for the new element
+              this.bindPreviewEvents();
+            } else {
+              console.log('❌ Even hard reset failed. Component may be fundamentally broken.');
+              this.showPreviewError();
+              this.showStatus('❌ Preview component failed to load. Try refreshing the page.', 'error');
+            }
+          }, 2000);
+        }, 100);
+      }
+      
+      bindPreviewEvents() {
+        // Re-bind auto-save events to the new component
+        let saveTimeout;
+        this.elements.preview.addEventListener('workflow-changed', () => {
+          clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => this.autoSave(), 2000);
+        });
+      }
+      
+      refreshPreview() {
+        console.log('🔄 Manual refresh requested...');
+        
+        // Force complete refresh first
+        this.forcePreviewRefresh();
+        
+        // Then reload the current workflow
+        const selectedWorkflowId = this.elements.workflowSelect.value;
+        if (selectedWorkflowId) {
+          console.log('Re-loading selected workflow:', selectedWorkflowId);
+          this.loadWorkflow(selectedWorkflowId);
+        } else if (this.currentWorkflow) {
+          console.log('Re-applying current workflow data');
+          this.loadWorkflowFromData(this.currentWorkflow, 'Manual Refresh');
+        } else {
+          this.showStatus('⚠️ No workflow to refresh', 'warning');
+        }
+      }
+      
+      showPreviewError() {
+        if (this.elements.previewHeader) {
+          this.elements.previewHeader.style.display = 'flex';
+        }
+      }
+      
+      hidePreviewError() {
+        if (this.elements.previewHeader) {
+          this.elements.previewHeader.style.display = 'none';
+        }
       }
       
       parseUrlParameters() {
@@ -293,8 +538,88 @@
       }
       
       loadWorkflowFromData(workflowData, source) {
+        console.log('🔄 ===== NEW WORKFLOW LOADING STARTED =====');
+        console.log('📍 Source:', source);
+        console.log('📊 Workflow Name:', workflowData?.name || 'Unnamed');
+        console.log('🆔 Workflow ID:', workflowData?.id || 'No ID');
+        
         this.currentWorkflow = workflowData;
-        this.elements.preview.setAttribute('workflow', JSON.stringify(workflowData));
+        
+        // Hide error initially while loading
+        this.hidePreviewError();
+        
+        console.log('=== DETAILED WORKFLOW LOADING DEBUG ===');
+        console.log('1. Source:', source);
+        console.log('2. Raw API data keys:', Object.keys(workflowData || {}));
+        console.log('3. Raw API data:', workflowData);
+        
+        // Compare with working legacy format structure
+        console.log('4. API vs Legacy comparison:');
+        console.log('   - API nodes count:', (workflowData.nodes || []).length);
+        console.log('   - API connections count:', Object.keys(workflowData.connections || {}).length);
+        console.log('   - API has pinData?', !!workflowData.pinData);
+        console.log('   - API has meta?', !!workflowData.meta);
+        console.log('   - API extra properties:', Object.keys(workflowData || {}).filter(k => 
+          !['nodes', 'connections', 'pinData', 'meta'].includes(k)));
+        
+        // Create format that EXACTLY matches the working legacy workflow.json
+        const legacyFormatWorkflow = {
+          nodes: workflowData.nodes || [],
+          connections: workflowData.connections || {}
+        };
+        
+        // Add pinData only if it exists and has content (like legacy)
+        if (workflowData.pinData && Object.keys(workflowData.pinData).length > 0) {
+          legacyFormatWorkflow.pinData = workflowData.pinData;
+          console.log('5. Added pinData with keys:', Object.keys(workflowData.pinData));
+        } else {
+          console.log('5. No pinData to add');
+        }
+        
+        // Add meta only if it has instanceId (like legacy)
+        if (workflowData.meta && workflowData.meta.instanceId) {
+          legacyFormatWorkflow.meta = {
+            instanceId: workflowData.meta.instanceId
+          };
+          console.log('6. Added meta with instanceId:', workflowData.meta.instanceId);
+        } else {
+          console.log('6. No meta.instanceId to add');
+        }
+        
+        // Validate critical structure
+        if (!Array.isArray(legacyFormatWorkflow.nodes)) {
+          console.log('⚠️ FIXING: nodes is not an array!');
+          legacyFormatWorkflow.nodes = [];
+        }
+        
+        if (!legacyFormatWorkflow.connections || typeof legacyFormatWorkflow.connections !== 'object') {
+          console.log('⚠️ FIXING: connections is not an object!');
+          legacyFormatWorkflow.connections = {};
+        }
+        
+        console.log('7. Final cleaned workflow keys:', Object.keys(legacyFormatWorkflow));
+        console.log('8. Final cleaned workflow:', legacyFormatWorkflow);
+        
+        // Set workflow data on the fresh component (component was already refreshed)
+        console.log('9. Setting workflow data on fresh component...');
+        this.elements.preview.setAttribute('workflow', JSON.stringify(legacyFormatWorkflow));
+        console.log('10. Workflow data set');
+        
+        // Check if loading was successful
+        setTimeout(() => {
+          console.log('=== CHECKING FRESH COMPONENT LOAD (1s) ===');
+          const success = this.checkComponentState('Fresh component check');
+          
+          if (success) {
+            console.log('✅ Fresh component loaded successfully!');
+            this.hidePreviewError();
+            this.showStatus(`✅ Preview loaded: "${workflowData.name || 'Unnamed'}"`, 'success');
+          } else {
+            console.log('❌ Even fresh component failed to load');
+            this.showPreviewError();
+            this.showStatus(`❌ Preview failed to load: "${workflowData.name || 'Unnamed'}"`, 'error');
+          }
+        }, 1000);
         
         // Enable save button if we have n8n connection
         if (this.isConnected) {
@@ -310,14 +635,84 @@
         this.showStatus(`✅ Loaded workflow "${workflowName}" from ${source}`, 'success');
       }
       
+      async testLegacyFallback() {
+        console.log('=== LEGACY FALLBACK TEST ===');
+        try {
+          const response = await fetch('workflow.json');
+          const legacyWorkflow = await response.json();
+          
+          console.log('Legacy workflow structure analysis:');
+          console.log('  - Keys:', Object.keys(legacyWorkflow));
+          console.log('  - Nodes count:', legacyWorkflow.nodes?.length || 0);
+          console.log('  - Connections keys:', Object.keys(legacyWorkflow.connections || {}));
+          console.log('  - Has pinData:', !!legacyWorkflow.pinData);
+          console.log('  - Has meta:', !!legacyWorkflow.meta);
+          console.log('  - Full legacy workflow:', legacyWorkflow);
+          
+          // Apply legacy workflow
+          this.elements.preview.setAttribute('workflow', JSON.stringify(legacyWorkflow));
+          console.log('Applied legacy workflow to preview component');
+          
+          // Test multiple time points
+          setTimeout(() => {
+            console.log('=== LEGACY TEST CHECK (1s) ===');
+            this.checkComponentState('Legacy fallback 1s');
+          }, 1000);
+          
+          setTimeout(() => {
+            console.log('=== LEGACY TEST CHECK (3s) ===');
+            const success = this.checkComponentState('Legacy fallback 3s');
+            
+            if (success) {
+              console.log('✅ Legacy workflow.json loaded successfully!');
+              this.hidePreviewError();
+              this.showStatus('✅ Preview loaded with legacy fallback workflow', 'success');
+              
+              // Compare what worked
+              console.log('=== SUCCESS COMPARISON ===');
+              console.log('Legacy workflow that WORKED:', JSON.stringify(legacyWorkflow, null, 2));
+              
+            } else {
+              console.log('❌ Even legacy workflow.json failed to load properly');
+              this.showStatus('❌ Preview component has deeper issues. Check browser console for details.', 'error');
+              
+              // This means the component itself might be broken
+              console.log('=== COMPONENT DEBUGGING ===');
+              console.log('n8n-demo element:', this.elements.preview);
+              console.log('Component custom element defined:', !!customElements.get('n8n-demo'));
+              console.log('Component loaded state:', this.elements.preview.loaded);
+              console.log('Component error state:', this.elements.preview.error);
+            }
+          }, 3000);
+          
+        } catch (error) {
+          console.log('Failed to load legacy workflow.json:', error);
+          this.showStatus('❌ Could not load fallback workflow. Check browser console.', 'error');
+        }
+      }
+      
       async loadWorkflowFromApi(workflowId) {
         try {
           this.showLoading(true, 'Loading workflow from n8n API...');
-          const workflow = await this.makeApiCall(`/api/v1/workflows/${workflowId}`);
+          
+          let workflow;
+          try {
+            // Try v1 API first
+            workflow = await this.makeApiCall(`/api/v1/workflows/${workflowId}`);
+          } catch (error) {
+            // Fall back to older API endpoint
+            workflow = await this.makeApiCall(`/rest/workflows/${workflowId}`);
+          }
+          
           this.isConnected = true;
           this.loadWorkflowFromData(workflow, 'n8n API');
           this.elements.saveBtn.disabled = false;
-          this.elements.editLink.href = `${this.n8nUrl}/workflow/${workflowId}`;
+          // Clean the URL for the edit link (remove proxy if present)
+          const cleanUrl = this.n8nUrl.includes('corsproxy.io') 
+            ? decodeURIComponent(this.n8nUrl.split('corsproxy.io/?')[1]) 
+            : this.n8nUrl;
+          this.elements.editLink.href = `${cleanUrl}/workflow/${workflowId}`;
+          
         } catch (error) {
           this.showStatus(`❌ Failed to load workflow from API: ${error.message}`, 'error');
         } finally {
@@ -326,15 +721,8 @@
       }
       
       loadFromLocalStorage() {
-        // Only load from localStorage if not provided via URL parameters
-        const savedUrl = this.urlParams.n8nUrl || localStorage.getItem('n8n-url') || this.config.n8nUrl || '';
-        
-        if (savedUrl) {
-          this.elements.n8nUrl.value = savedUrl;
-          this.n8nUrl = savedUrl;
-        }
-        
         // Don't auto-load API keys - always prompt for security
+        // URL is hardcoded, so no need to load from localStorage
       }
       
       applyBranding() {
@@ -359,20 +747,11 @@
       }
       
       saveToLocalStorage() {
-        localStorage.setItem('n8n-url', this.n8nUrl);
-        if (this.apiKey) {
-          localStorage.setItem('n8n-api-key', this.apiKey);
-        }
+        // Don't save API keys for security - they're always prompted for
+        // URL is hardcoded, so no need to save
       }
       
       async connect() {
-        const url = this.elements.n8nUrl.value.trim();
-        if (!url) {
-          this.showStatus('Please enter your n8n instance URL', 'error');
-          return;
-        }
-        
-        this.n8nUrl = url.replace(/\/$/, ''); // Remove trailing slash
         this.showLoading(true, 'Connecting...');
         this.elements.connectBtn.disabled = true;
         
@@ -382,11 +761,15 @@
             await this.promptForApiKey();
           }
           
+          this.showLoading(true, 'Testing connection...');
+          
           // Test connection with API key
           await this.testConnection();
           this.isConnected = true;
-          this.saveToLocalStorage();
+          
+          this.showLoading(true, 'Loading workflows...');
           await this.loadWorkflows();
+          
           this.showStatus('✅ Connected successfully!', 'success');
           this.enableWorkflowControls();
           
@@ -397,14 +780,27 @@
           
         } catch (error) {
           console.error('Connection failed:', error);
-          this.showStatus(`❌ Connection failed: ${error.message}`, 'error');
+          
+          // Provide specific error messages
+          let errorMessage = error.message;
+          
+          if (error.message.includes('API key') || error.message.includes('401')) {
+            errorMessage = 'Invalid API key. Please check your API key in n8n Settings → Personal Access Tokens';
+            this.apiKey = ''; // Clear invalid API key
+          } else if (error.message.includes('404') || error.message.includes('not found')) {
+            errorMessage = 'n8n API endpoints not found. Please check your n8n instance.';
+          }
+          
+          this.showStatus(`❌ ${errorMessage}`, 'error');
           this.isConnected = false;
-          this.apiKey = ''; // Clear API key on failed connection
+          
         } finally {
           this.showLoading(false);
           this.elements.connectBtn.disabled = false;
         }
       }
+      
+
       
       async testConnection() {
         // Try different API endpoints to detect n8n version and capabilities
@@ -415,12 +811,11 @@
         
         for (const endpoint of endpoints) {
           try {
-            const response = await fetch(`${this.n8nUrl}${endpoint}`, {
+            // Simple GET request to avoid CORS preflight
+            const response = await fetch(`${this.n8nUrl}${endpoint}?limit=1`, {
               method: 'GET',
               headers: {
-                'Accept': 'application/json',
-                'X-N8N-API-KEY': this.apiKey,
-                ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+                'X-N8N-API-KEY': this.apiKey
               }
             });
             
@@ -430,13 +825,15 @@
               throw new Error('Invalid API key or insufficient permissions');
             }
           } catch (error) {
-            if (error.message.includes('API key')) {
-              throw error; // Re-throw API key errors
+            if (error.message.includes('API key') || error.message.includes('401')) {
+              throw error; // Re-throw authentication errors
             }
-            continue; // Try next endpoint for network errors
+            // For CORS or network errors, try next endpoint
+            console.warn(`Failed to connect to ${endpoint}:`, error.message);
+            continue;
           }
         }
-        throw new Error('Could not connect to n8n instance. Check URL and network connection.');
+        throw new Error('Could not connect to n8n instance. Check URL, API key, and CORS configuration.');
       }
       
       async promptForApiKey() {
@@ -460,8 +857,22 @@
       
       async loadWorkflows() {
         try {
-          const response = await this.makeApiCall('/api/v1/workflows');
-          this.workflows = response.data || response;
+          // Try v1 API first, then fall back to older API
+          let response;
+          try {
+            response = await this.makeApiCall('/api/v1/workflows?limit=100');
+          } catch (error) {
+            // Fall back to older API endpoint
+            response = await this.makeApiCall('/rest/workflows?limit=100');
+          }
+          
+          // Handle different response formats
+          this.workflows = Array.isArray(response) ? response : (response.data || response.workflows || []);
+          
+          if (!Array.isArray(this.workflows)) {
+            this.workflows = [];
+          }
+          
           this.populateWorkflowSelect();
           this.showStatus(`📋 Loaded ${this.workflows.length} workflows`, 'success');
           
@@ -476,6 +887,8 @@
         } catch (error) {
           console.error('Failed to load workflows:', error);
           this.showStatus(`❌ Failed to load workflows: ${error.message}`, 'error');
+          this.workflows = []; // Ensure workflows is always an array
+          this.populateWorkflowSelect();
         }
       }
       
@@ -511,8 +924,11 @@
           // Update preview
           this.elements.preview.setAttribute('workflow', JSON.stringify(workflow));
           
-          // Update edit link
-          this.elements.editLink.href = `${this.n8nUrl}/workflow/${workflowId}`;
+          // Update edit link (remove proxy from URL if present)
+          const cleanUrl = this.n8nUrl.includes('corsproxy.io') 
+            ? decodeURIComponent(this.n8nUrl.split('corsproxy.io/?')[1]) 
+            : this.n8nUrl;
+          this.elements.editLink.href = `${cleanUrl}/workflow/${workflowId}`;
           
           // Enable save button and mark as saved
           this.elements.saveBtn.disabled = false;
@@ -546,29 +962,52 @@
         this.elements.saveBtn.disabled = true;
         
         try {
-          // Get current workflow data from the preview component
-          const workflowData = JSON.parse(this.elements.preview.getAttribute('workflow') || '{}');
+          // Get current workflow data from the preview component (legacy format)
+          const legacyFormatData = JSON.parse(this.elements.preview.getAttribute('workflow') || '{}');
+          
+          // Create clean workflow data for API save (remove read-only properties)
+          const workflowToSave = {
+            name: this.currentWorkflow.name,
+            // Don't include 'active' - it's read-only in the API
+            nodes: legacyFormatData.nodes || [],
+            connections: legacyFormatData.connections || {},
+            settings: this.currentWorkflow.settings || {}
+          };
+          
+          // Only include optional fields if they exist
+          if (legacyFormatData.pinData && Object.keys(legacyFormatData.pinData).length > 0) {
+            workflowToSave.pinData = legacyFormatData.pinData;
+          }
+          
+          if (this.currentWorkflow.staticData !== null && this.currentWorkflow.staticData !== undefined) {
+            workflowToSave.staticData = this.currentWorkflow.staticData;
+          }
+          
+          // Don't include these read-only properties that cause 400 errors:
+          // - id, createdAt, updatedAt, shared, tags, versionId, triggerCount
+          
+          console.log('Clean workflow for API save:', workflowToSave);
           
           // Case 1: Workflow has an ID - update existing workflow
           if (this.currentWorkflow.id) {
             await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
               method: 'PUT',
-              body: JSON.stringify(workflowData)
+              body: JSON.stringify(workflowToSave)
             });
             this.showStatus('💾 Workflow updated successfully!', 'success');
           }
           
           // Case 2: No ID - try to find by name or create new workflow
           else {
-            const existingWorkflow = this.workflows.find(w => w.name === workflowData.name);
+            const existingWorkflow = this.workflows.find(w => w.name === workflowToSave.name);
             
             if (existingWorkflow) {
               // Update existing workflow with same name
-              const confirm = window.confirm(`A workflow named "${workflowData.name}" already exists. Update it?`);
+              const confirm = window.confirm(`A workflow named "${workflowToSave.name}" already exists. Update it?`);
               if (confirm) {
                 await this.makeApiCall(`/api/v1/workflows/${existingWorkflow.id}`, {
                   method: 'PUT',
-                  body: JSON.stringify({...workflowData, id: existingWorkflow.id})
+                  body: JSON.stringify({...workflowToSave, id: existingWorkflow.id})
                 });
                 this.currentWorkflow.id = existingWorkflow.id;
                 this.showStatus('💾 Existing workflow updated successfully!', 'success');
@@ -579,7 +1018,7 @@
               // Create new workflow
               const newWorkflow = await this.makeApiCall('/api/v1/workflows', {
                 method: 'POST',
-                body: JSON.stringify(workflowData)
+                body: JSON.stringify(workflowToSave)
               });
               this.currentWorkflow.id = newWorkflow.id;
               this.showStatus('💾 New workflow created successfully!', 'success');
@@ -587,12 +1026,16 @@
           }
           
           // Update current workflow to reflect saved state
-          this.currentWorkflow = {...this.currentWorkflow, ...workflowData};
+          this.currentWorkflow = workflowToSave;
           this.markAsSaved();
           
           // Update edit link if we have an ID now
           if (this.currentWorkflow.id) {
-            this.elements.editLink.href = `${this.n8nUrl}/workflow/${this.currentWorkflow.id}`;
+            // Clean the URL for the edit link (remove proxy if present)
+            const cleanUrl = this.n8nUrl.includes('corsproxy.io') 
+              ? decodeURIComponent(this.n8nUrl.split('corsproxy.io/?')[1]) 
+              : this.n8nUrl;
+            this.elements.editLink.href = `${cleanUrl}/workflow/${this.currentWorkflow.id}`;
           }
           
         } catch (error) {
@@ -668,14 +1111,37 @@
         }
         
         try {
-          // Get current workflow data from the preview component
+          // Get current workflow data from the preview component (legacy format)
           const currentData = this.elements.preview.getAttribute('workflow');
           if (!currentData) return;
           
-          const workflowData = JSON.parse(currentData);
+          const legacyFormatData = JSON.parse(currentData);
           
-          // Only save if there are actual changes
-          const hasChanges = JSON.stringify(workflowData) !== JSON.stringify(this.currentWorkflow);
+          // Create clean workflow data for API save (same as manual save)
+          const workflowToSave = {
+            name: this.currentWorkflow.name,
+            // Don't include 'active' - it's read-only in the API
+            nodes: legacyFormatData.nodes || [],
+            connections: legacyFormatData.connections || {},
+            settings: this.currentWorkflow.settings || {}
+          };
+          
+          // Only include optional fields if they exist
+          if (legacyFormatData.pinData && Object.keys(legacyFormatData.pinData).length > 0) {
+            workflowToSave.pinData = legacyFormatData.pinData;
+          }
+          
+          if (this.currentWorkflow.staticData !== null && this.currentWorkflow.staticData !== undefined) {
+            workflowToSave.staticData = this.currentWorkflow.staticData;
+          }
+          
+          // Only save if there are actual changes to nodes/connections
+          const currentNodes = JSON.stringify(this.currentWorkflow.nodes || []);
+          const currentConnections = JSON.stringify(this.currentWorkflow.connections || {});
+          const newNodes = JSON.stringify(legacyFormatData.nodes || []);
+          const newConnections = JSON.stringify(legacyFormatData.connections || {});
+          
+          const hasChanges = currentNodes !== newNodes || currentConnections !== newConnections;
           if (!hasChanges) {
             this.hasUnsavedChanges = false;
             return;
@@ -687,11 +1153,11 @@
           // Update the workflow via API
           await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
             method: 'PUT',
-            body: JSON.stringify(workflowData)
+            body: JSON.stringify(workflowToSave)
           });
           
           // Update current workflow to reflect saved state
-          this.currentWorkflow = workflowData;
+          this.currentWorkflow = workflowToSave;
           this.hasUnsavedChanges = false;
           
           this.showStatus('💾 Auto-saved successfully', 'success');
@@ -734,33 +1200,67 @@
       
       async makeApiCall(endpoint, options = {}) {
         const url = `${this.n8nUrl}${endpoint}`;
+        const method = options.method || 'GET';
+        
+        // Build minimal headers to avoid CORS preflight
         const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...(this.apiKey && { 
-            'X-N8N-API-KEY': this.apiKey,
-            'Authorization': `Bearer ${this.apiKey}` 
-          }),
-          ...options.headers
+          'X-N8N-API-KEY': this.apiKey
         };
         
-        const response = await fetch(url, {
-          ...options,
-          headers
-        });
-        
-        if (!response.ok) {
-          let errorText;
-          try {
-            const errorJson = await response.json();
-            errorText = errorJson.message || JSON.stringify(errorJson);
-          } catch {
-            errorText = await response.text();
-          }
-          throw new Error(`API call failed (${response.status}): ${errorText}`);
+        // Only add Content-Type for requests with body
+        if (method !== 'GET' && method !== 'HEAD' && options.body) {
+          headers['Content-Type'] = 'application/json';
         }
         
-        return await response.json();
+        // Add any custom headers
+        if (options.headers) {
+          Object.assign(headers, options.headers);
+        }
+        
+        const fetchOptions = {
+          method,
+          headers,
+          ...options
+        };
+        
+        try {
+          const response = await fetch(url, fetchOptions);
+          
+          if (!response.ok) {
+            let errorText;
+            try {
+              const errorJson = await response.json();
+              console.log('API Error Response:', errorJson);
+              errorText = errorJson.message || JSON.stringify(errorJson, null, 2);
+            } catch {
+              errorText = await response.text();
+            }
+            
+            // Provide specific guidance for common errors
+            if (response.status === 400) {
+              console.error('400 Error Details:', errorText);
+              if (errorText.includes('additional properties')) {
+                errorText = 'Invalid workflow data format. Some properties are not allowed in the API request.';
+              }
+            }
+            
+            throw new Error(`API call failed (${response.status}): ${errorText}`);
+          }
+          
+          // Handle empty responses
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+          } else {
+            return {};
+          }
+        } catch (error) {
+          // Provide better error messages for common issues
+          if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+            throw new Error('Network error: Check CORS configuration or internet connection');
+          }
+          throw error;
+        }
       }
       
       enableWorkflowControls() {

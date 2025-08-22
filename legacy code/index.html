@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>n8n Workflow Preview</title>
+
+  <!-- Required scripts for the n8n preview component -->
+  <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2/webcomponents-loader.js"></script>
+  <script src="https://www.unpkg.com/lit@2/polyfill-support.js"></script>
+  <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+
+  <style>
+    :root { --pad: 20px; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: #0f172a; color: #e2e8f0;
+      display: grid; grid-template-rows: auto 1fr auto; /* header, main, footer */
+    }
+    header, main, footer { padding: var(--pad); }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap; }
+    .title { font-size: 18px; font-weight: 600; }
+    .actions { display:flex; gap:10px; }
+    button, a.button {
+      padding:10px 14px; border-radius:10px; border:1px solid #334155; background:#111827;
+      color:#e2e8f0; text-decoration:none; cursor:pointer;
+    }
+    button:hover, a.button:hover { background:#0b1220; }
+
+    /* The preview should fill the main area */
+    main { min-height: 0; }            /* allow child to stretch */
+    n8n-demo {
+      width: 100%; height: 100%;
+      display:block; background:#0b1220; border:1px solid #334155; border-radius: 14px;
+      min-height: 420px;               /* sensible minimum */
+    }
+    footer { font-size:12px; color:#94a3b8; }
+    code { background:#0b1220; padding:2px 6px; border-radius:6px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title">n8n Workflow Preview</div>
+    <div class="actions">
+      <button id="fullscreen" title="Full screen the preview">Full screen</button>
+      <a id="editLink" class="button" href="#" target="_blank" rel="noopener">Edit in n8n</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- The preview component fills the whole main area -->
+    <n8n-demo id="preview" frame="true"></n8n-demo>
+  </main>
+
+  <footer>
+    <p>This is a read-only preview powered by the public <code>&lt;n8n-demo&gt;</code> web component.
+       Click <strong>Edit in n8n</strong> to open the real editor.</p>
+  </footer>
+
+  <script>
+    // Make the preview consume all remaining viewport height (header + footer accounted for)
+    function sizePreview() {
+      const preview = document.getElementById('preview');
+      const header = document.querySelector('header');
+      const footer = document.querySelector('footer');
+
+      const pad = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pad')) || 0;
+      const used = header.offsetHeight + footer.offsetHeight + (pad * 0); // padding is on header/footer already
+      const h = Math.max(420, window.innerHeight - used - (pad * 2));     // 2*pad for main block padding
+      preview.style.height = h + 'px';
+    }
+    window.addEventListener('load', sizePreview);
+    window.addEventListener('resize', sizePreview);
+
+    // Load workflow JSON
+    fetch('workflow.json')
+      .then(r => r.json())
+      .then(json => {
+        document.getElementById('preview')
+          .setAttribute('workflow', JSON.stringify(json));
+      });
+
+    // Full-screen the entire page for maximum space
+    document.getElementById('fullscreen').addEventListener('click', () => {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen();
+    });
+
+    // Deep link to your editor
+    const WORKFLOW_EDITOR_URL = 'https://n8n-test.teljoy.io/workflow/Y8kMZ9BJSxwklRWB';
+    document.getElementById('editLink').href = WORKFLOW_EDITOR_URL;
+  </script>
+</body>
+</html>
