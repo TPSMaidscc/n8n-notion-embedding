@@ -3,94 +3,696 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>n8n Workflow Preview</title>
+  <title>n8n Dynamic Workflow Editor</title>
 
   <!-- Required scripts for the n8n preview component -->
   <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2/webcomponents-loader.js"></script>
   <script src="https://www.unpkg.com/lit@2/polyfill-support.js"></script>
   <script type="module" src="https://cdn.jsdelivr.net/npm/@n8n_io/n8n-demo-component/n8n-demo.bundled.js"></script>
+  
+  <!-- Optional configuration file -->
+  <script src="config.js" onerror="console.log('No config.js found, using defaults')"></script>
 
   <style>
-    :root { --pad: 20px; }
+    :root { --pad: 16px; --primary: #ff6d5a; --primary-hover: #e55a47; --secondary: #4f46e5; }
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
+    html, body { height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body {
-      margin: 0;
-      background: #0f172a; color: #e2e8f0;
-      display: grid; grid-template-rows: auto 1fr auto; /* header, main, footer */
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      display: grid; 
+      grid-template-rows: auto auto 1fr auto;
+      gap: var(--pad);
     }
-    header, main, footer { padding: var(--pad); }
-    header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap: wrap; }
-    .title { font-size: 18px; font-weight: 600; }
-    .actions { display:flex; gap:10px; }
-    button, a.button {
-      padding:10px 14px; border-radius:10px; border:1px solid #334155; background:#111827;
-      color:#e2e8f0; text-decoration:none; cursor:pointer;
+    
+    .container { max-width: 100%; margin: 0 auto; padding: 0 var(--pad); }
+    
+    /* Header */
+    header { padding: var(--pad); background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #334155; }
+    .header-content { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .title { font-size: 20px; font-weight: 700; color: var(--primary); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    
+    /* Configuration Panel */
+    .config-panel { padding: var(--pad); background: rgba(17, 24, 39, 0.9); border-bottom: 1px solid #374151; }
+    .config-content { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; }
+    .config-input { 
+      padding: 10px 14px; background: #1f2937; border: 1px solid #374151; 
+      border-radius: 8px; color: #e2e8f0; font-size: 14px; min-width: 200px;
     }
-    button:hover, a.button:hover { background:#0b1220; }
-
-    /* The preview should fill the main area */
-    main { min-height: 0; }            /* allow child to stretch */
+    .config-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 109, 90, 0.1); }
+    
+    /* Buttons */
+    .btn {
+      padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer;
+      font-weight: 500; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+      transition: all 0.2s ease; font-size: 14px; min-width: auto;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--secondary); color: white; }
+    .btn-secondary:hover { background: #4338ca; transform: translateY(-1px); }
+    .btn-outline { background: transparent; color: #e2e8f0; border: 1px solid #374151; }
+    .btn-outline:hover { background: #374151; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+    
+    /* Main content */
+    main { min-height: 0; padding: 0 var(--pad); position: relative; }
+    
+    /* Workflow selector */
+    .workflow-selector { 
+      margin-bottom: var(--pad); padding: var(--pad); background: rgba(17, 24, 39, 0.8);
+      border: 1px solid #374151; border-radius: 12px; backdrop-filter: blur(10px);
+    }
+    .selector-grid { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .workflow-select { 
+      padding: 10px 14px; background: #1f2937; border: 1px solid #374151; 
+      border-radius: 8px; color: #e2e8f0; font-size: 14px; min-width: 200px;
+    }
+    
+    /* Workflow viewer */
+    .workflow-container { 
+      position: relative; border-radius: 14px; overflow: hidden; 
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
     n8n-demo {
-      width: 100%; height: 100%;
-      display:block; background:#0b1220; border:1px solid #334155; border-radius: 14px;
-      min-height: 420px;               /* sensible minimum */
+      width: 100%; height: 100%; display: block; 
+      background: #0b1220; border: 1px solid #334155; min-height: 500px;
     }
-    footer { font-size:12px; color:#94a3b8; }
-    code { background:#0b1220; padding:2px 6px; border-radius:6px; }
+    
+    /* Status and loading */
+    .status { 
+      padding: 8px 12px; background: rgba(34, 197, 94, 0.1); color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.2); border-radius: 6px; font-size: 12px; font-weight: 500;
+    }
+    .status.error { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+    .status.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
+    
+    .loading { display: none; align-items: center; gap: 8px; color: #94a3b8; }
+    .loading.show { display: flex; }
+    .spinner { 
+      width: 16px; height: 16px; border: 2px solid #374151; border-top: 2px solid var(--primary); 
+      border-radius: 50%; animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+    /* Footer */
+    footer { padding: var(--pad); font-size: 12px; color: #64748b; text-align: center; }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      :root { --pad: 12px; }
+      .config-content { grid-template-columns: 1fr; }
+      .selector-grid { grid-template-columns: 1fr; }
+      .header-content { flex-direction: column; align-items: stretch; }
+      .actions { justify-content: center; }
+    }
   </style>
 </head>
 <body>
   <header>
-    <div class="title">n8n Workflow Preview</div>
+    <div class="header-content">
+      <div class="title">🚀 n8n Dynamic Workflow Editor</div>
     <div class="actions">
-      <button id="fullscreen" title="Full screen the preview">Full screen</button>
-      <a id="editLink" class="button" href="#" target="_blank" rel="noopener">Edit in n8n</a>
+        <button id="fullscreen" class="btn btn-outline" title="Full screen">
+          <span>⛶</span> Fullscreen
+        </button>
+        <a id="editLink" class="btn btn-secondary" href="#" target="_blank" rel="noopener">
+          <span>✏️</span> Edit in n8n
+        </a>
+      </div>
     </div>
   </header>
 
+  <!-- Configuration Panel -->
+  <div class="config-panel">
+    <div class="config-content">
+      <input type="text" id="n8nUrl" class="config-input" placeholder="Enter your n8n instance URL (e.g., https://your-n8n.com)" />
+      <button id="connectBtn" class="btn btn-primary">
+        <span>🔗</span> Connect
+      </button>
+      <div class="loading">
+        <div class="spinner"></div>
+        <span>Connecting...</span>
+      </div>
+    </div>
+  </div>
+
   <main>
-    <!-- The preview component fills the whole main area -->
+    <!-- Workflow Selector -->
+    <div class="workflow-selector">
+      <div class="selector-grid">
+        <select id="workflowSelect" class="workflow-select" disabled>
+          <option value="">Select a workflow to load...</option>
+        </select>
+        <div class="actions">
+          <button id="refreshBtn" class="btn btn-outline" disabled>
+            <span>🔄</span> Refresh
+          </button>
+          <button id="saveBtn" class="btn btn-primary" disabled>
+            <span>💾</span> Save Changes
+          </button>
+        </div>
+      </div>
+      <div id="statusMsg" class="status" style="display: none; margin-top: 12px;"></div>
+    </div>
+
+    <!-- Workflow Viewer -->
+    <div class="workflow-container">
     <n8n-demo id="preview" frame="true"></n8n-demo>
+    </div>
   </main>
 
   <footer>
-    <p>This is a read-only preview powered by the public <code>&lt;n8n-demo&gt;</code> web component.
-       Click <strong>Edit in n8n</strong> to open the real editor.</p>
+    <p>
+      🎯 <strong>Dynamic n8n Integration:</strong> Connect to your n8n instance to load, view, and save workflows directly.
+      <br/>
+      💡 Perfect for embedding in <a href="https://notion.so" target="_blank">Notion</a> or any other platform.
+    </p>
   </footer>
 
   <script>
-    // Make the preview consume all remaining viewport height (header + footer accounted for)
-    function sizePreview() {
-      const preview = document.getElementById('preview');
+    // ==========================================
+    // n8n Dynamic Workflow Editor
+    // ==========================================
+    
+    class N8nDynamicEditor {
+      constructor() {
+        // Load configuration
+        this.config = window.N8N_CONFIG || {};
+        
+        this.n8nUrl = this.config.n8nUrl || '';
+        this.apiKey = this.config.apiKey || '';
+        this.workflows = [];
+        this.currentWorkflow = null;
+        this.isConnected = false;
+        this.autoSaveEnabled = this.config.autoSave !== false; // Default true
+        this.hasUnsavedChanges = false;
+        
+        this.initializeElements();
+        this.bindEvents();
+        this.loadFromLocalStorage();
+        this.applyBranding();
+        this.initializePreviewSizing();
+        
+        // Auto-connect if configured
+        if (this.config.autoConnect && this.n8nUrl) {
+          setTimeout(() => this.connect(), 500);
+        }
+      }
+      
+      initializeElements() {
+        this.elements = {
+          n8nUrl: document.getElementById('n8nUrl'),
+          connectBtn: document.getElementById('connectBtn'),
+          loading: document.querySelector('.loading'),
+          workflowSelect: document.getElementById('workflowSelect'),
+          refreshBtn: document.getElementById('refreshBtn'),
+          saveBtn: document.getElementById('saveBtn'),
+          statusMsg: document.getElementById('statusMsg'),
+          preview: document.getElementById('preview'),
+          fullscreenBtn: document.getElementById('fullscreen'),
+          editLink: document.getElementById('editLink')
+        };
+      }
+      
+      bindEvents() {
+        this.elements.connectBtn.addEventListener('click', () => this.connect());
+        this.elements.workflowSelect.addEventListener('change', (e) => this.loadWorkflow(e.target.value));
+        this.elements.refreshBtn.addEventListener('click', () => this.refreshWorkflows());
+        this.elements.saveBtn.addEventListener('click', () => this.saveWorkflow());
+        this.elements.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
+        this.elements.n8nUrl.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') this.connect();
+        });
+        
+        // Auto-save on workflow changes (debounced)
+        let saveTimeout;
+        this.elements.preview.addEventListener('workflow-changed', () => {
+          clearTimeout(saveTimeout);
+          saveTimeout = setTimeout(() => this.autoSave(), 2000);
+        });
+      }
+      
+      loadFromLocalStorage() {
+        const savedUrl = localStorage.getItem('n8n-url') || this.config.n8nUrl || '';
+        const savedApiKey = localStorage.getItem('n8n-api-key') || this.config.apiKey || '';
+        
+        if (savedUrl) {
+          this.elements.n8nUrl.value = savedUrl;
+          this.n8nUrl = savedUrl;
+        }
+        if (savedApiKey) {
+          this.apiKey = savedApiKey;
+        }
+      }
+      
+      applyBranding() {
+        const branding = this.config.branding || {};
+        
+        // Update title if configured
+        if (branding.title) {
+          document.title = branding.title;
+          document.querySelector('.title').textContent = `🚀 ${branding.title}`;
+        }
+        
+        // Update primary color if configured
+        if (branding.primaryColor) {
+          document.documentElement.style.setProperty('--primary', branding.primaryColor);
+        }
+        
+        // Hide powered by message if configured
+        if (branding.showPoweredBy === false) {
+          const footer = document.querySelector('footer p');
+          footer.innerHTML = '💡 Perfect for embedding in <a href="https://notion.so" target="_blank">Notion</a> or any other platform.';
+        }
+      }
+      
+      saveToLocalStorage() {
+        localStorage.setItem('n8n-url', this.n8nUrl);
+        if (this.apiKey) {
+          localStorage.setItem('n8n-api-key', this.apiKey);
+        }
+      }
+      
+      async connect() {
+        const url = this.elements.n8nUrl.value.trim();
+        if (!url) {
+          this.showStatus('Please enter your n8n instance URL', 'error');
+          return;
+        }
+        
+        this.n8nUrl = url.replace(/\/$/, ''); // Remove trailing slash
+        this.showLoading(true);
+        this.elements.connectBtn.disabled = true;
+        
+        try {
+          // First, try to get API key or check if authentication is needed
+          await this.testConnection();
+          this.isConnected = true;
+          this.saveToLocalStorage();
+          await this.loadWorkflows();
+          this.showStatus('✅ Connected successfully!', 'success');
+          this.enableWorkflowControls();
+        } catch (error) {
+          console.error('Connection failed:', error);
+          this.showStatus(`❌ Connection failed: ${error.message}`, 'error');
+          this.isConnected = false;
+        } finally {
+          this.showLoading(false);
+          this.elements.connectBtn.disabled = false;
+        }
+      }
+      
+      async testConnection() {
+        // Try different API endpoints to detect n8n version and capabilities
+        const endpoints = [
+          '/api/v1/workflows', // n8n v1+
+          '/rest/workflows',   // older versions
+        ];
+        
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetch(`${this.n8nUrl}${endpoint}`, {
+              method: 'GET',
+              headers: {
+                'Accept': 'application/json',
+                ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` })
+              }
+            });
+            
+            if (response.ok) {
+              return endpoint;
+            } else if (response.status === 401) {
+              // Need API key
+              await this.promptForApiKey();
+              return await this.testConnection(); // Retry with API key
+            }
+          } catch (error) {
+            continue; // Try next endpoint
+          }
+        }
+        throw new Error('Could not connect to n8n instance. Check URL and network.');
+      }
+      
+      async promptForApiKey() {
+        const apiKey = prompt('This n8n instance requires authentication. Please enter your API key:');
+        if (!apiKey) {
+          throw new Error('API key is required for authentication');
+        }
+        this.apiKey = apiKey;
+      }
+      
+      async loadWorkflows() {
+        try {
+          const response = await this.makeApiCall('/api/v1/workflows');
+          this.workflows = response.data || response;
+          this.populateWorkflowSelect();
+          this.showStatus(`📋 Loaded ${this.workflows.length} workflows`, 'success');
+          
+          // Auto-load default workflow if configured
+          if (this.config.defaultWorkflowId) {
+            const defaultWorkflow = this.workflows.find(w => w.id === this.config.defaultWorkflowId);
+            if (defaultWorkflow) {
+              this.elements.workflowSelect.value = this.config.defaultWorkflowId;
+              await this.loadWorkflow(this.config.defaultWorkflowId);
+            }
+          }
+        } catch (error) {
+          console.error('Failed to load workflows:', error);
+          this.showStatus(`❌ Failed to load workflows: ${error.message}`, 'error');
+        }
+      }
+      
+      populateWorkflowSelect() {
+        const select = this.elements.workflowSelect;
+        select.innerHTML = '<option value="">Select a workflow to load...</option>';
+        
+        this.workflows.forEach(workflow => {
+          const option = document.createElement('option');
+          option.value = workflow.id;
+          option.textContent = `${workflow.name} ${workflow.active ? '🟢' : '🔴'}`;
+          select.appendChild(option);
+        });
+        
+        select.disabled = false;
+      }
+      
+      async loadWorkflow(workflowId) {
+        if (!workflowId) {
+          this.currentWorkflow = null;
+          this.elements.preview.removeAttribute('workflow');
+          this.elements.editLink.href = '#';
+          this.elements.saveBtn.disabled = true;
+          return;
+        }
+        
+        this.showLoading(true, 'Loading workflow...');
+        
+        try {
+          const workflow = await this.makeApiCall(`/api/v1/workflows/${workflowId}`);
+          this.currentWorkflow = workflow;
+          
+          // Update preview
+          this.elements.preview.setAttribute('workflow', JSON.stringify(workflow));
+          
+          // Update edit link
+          this.elements.editLink.href = `${this.n8nUrl}/workflow/${workflowId}`;
+          
+          // Enable save button and mark as saved
+          this.elements.saveBtn.disabled = false;
+          this.markAsSaved();
+          
+          // Set up change detection
+          this.setupChangeDetection();
+          
+          this.showStatus(`✅ Loaded workflow: ${workflow.name}`, 'success');
+          
+        } catch (error) {
+          console.error('Failed to load workflow:', error);
+          this.showStatus(`❌ Failed to load workflow: ${error.message}`, 'error');
+        } finally {
+          this.showLoading(false);
+        }
+      }
+      
+      async saveWorkflow() {
+        if (!this.currentWorkflow) {
+          this.showStatus('⚠️ No workflow selected to save', 'warning');
+          return;
+        }
+        
+        this.showLoading(true, 'Saving workflow...');
+        this.elements.saveBtn.disabled = true;
+        
+        try {
+          // Get current workflow data from the preview component
+          const workflowData = JSON.parse(this.elements.preview.getAttribute('workflow') || '{}');
+          
+          // Update the workflow via API
+          await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(workflowData)
+          });
+          
+          // Update current workflow to reflect saved state
+          this.currentWorkflow = workflowData;
+          this.markAsSaved();
+          
+          this.showStatus('💾 Workflow saved successfully!', 'success');
+          
+        } catch (error) {
+          console.error('Failed to save workflow:', error);
+          this.showStatus(`❌ Failed to save workflow: ${error.message}`, 'error');
+        } finally {
+          this.showLoading(false);
+          this.elements.saveBtn.disabled = false;
+        }
+      }
+      
+      setupChangeDetection() {
+        // Monitor workflow changes using MutationObserver
+        if (this.workflowObserver) {
+          this.workflowObserver.disconnect();
+        }
+        
+        this.workflowObserver = new MutationObserver((mutations) => {
+          // Check if workflow attribute changed
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'workflow') {
+              this.markAsChanged();
+            }
+          });
+        });
+        
+        // Start observing the workflow preview component
+        this.workflowObserver.observe(this.elements.preview, {
+          attributes: true,
+          attributeFilter: ['workflow']
+        });
+        
+        // Also set up periodic change detection as a fallback
+        if (this.changeDetectionInterval) {
+          clearInterval(this.changeDetectionInterval);
+        }
+        
+        let lastWorkflowHash = this.hashWorkflow(this.currentWorkflow);
+        this.changeDetectionInterval = setInterval(() => {
+          if (this.currentWorkflow) {
+            const currentData = this.elements.preview.getAttribute('workflow');
+            if (currentData) {
+              const currentHash = this.hashWorkflow(JSON.parse(currentData));
+              if (currentHash !== lastWorkflowHash) {
+                this.markAsChanged();
+                lastWorkflowHash = currentHash;
+              }
+            }
+          }
+        }, 1000);
+      }
+      
+      hashWorkflow(workflow) {
+        // Simple hash function for workflow comparison
+        return JSON.stringify(workflow).split('').reduce((hash, char) => {
+          hash = ((hash << 5) - hash) + char.charCodeAt(0);
+          return hash & hash; // Convert to 32-bit integer
+        }, 0);
+      }
+      
+      cleanup() {
+        if (this.workflowObserver) {
+          this.workflowObserver.disconnect();
+        }
+        if (this.changeDetectionInterval) {
+          clearInterval(this.changeDetectionInterval);
+        }
+      }
+      
+      async autoSave() {
+        if (!this.autoSaveEnabled || !this.currentWorkflow || !this.isConnected || !this.hasUnsavedChanges) {
+          return;
+        }
+        
+        try {
+          // Get current workflow data from the preview component
+          const currentData = this.elements.preview.getAttribute('workflow');
+          if (!currentData) return;
+          
+          const workflowData = JSON.parse(currentData);
+          
+          // Only save if there are actual changes
+          const hasChanges = JSON.stringify(workflowData) !== JSON.stringify(this.currentWorkflow);
+          if (!hasChanges) {
+            this.hasUnsavedChanges = false;
+            return;
+          }
+          
+          // Show saving indicator
+          this.showLoading(true, 'Auto-saving...');
+          
+          // Update the workflow via API
+          await this.makeApiCall(`/api/v1/workflows/${this.currentWorkflow.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(workflowData)
+          });
+          
+          // Update current workflow to reflect saved state
+          this.currentWorkflow = workflowData;
+          this.hasUnsavedChanges = false;
+          
+          this.showStatus('💾 Auto-saved successfully', 'success');
+          
+        } catch (error) {
+          console.error('Auto-save failed:', error);
+          this.showStatus('⚠️ Auto-save failed - changes not saved', 'warning');
+        } finally {
+          this.showLoading(false);
+        }
+      }
+      
+      markAsChanged() {
+        this.hasUnsavedChanges = true;
+        // Update save button to show there are unsaved changes
+        if (this.elements.saveBtn && !this.elements.saveBtn.disabled) {
+          this.elements.saveBtn.innerHTML = '<span>💾</span> Save Changes*';
+          this.elements.saveBtn.style.backgroundColor = '#f59e0b'; // Warning color
+        }
+      }
+      
+      markAsSaved() {
+        this.hasUnsavedChanges = false;
+        if (this.elements.saveBtn) {
+          this.elements.saveBtn.innerHTML = '<span>💾</span> Save Changes';
+          this.elements.saveBtn.style.backgroundColor = ''; // Reset to default
+        }
+      }
+      
+      async refreshWorkflows() {
+        if (!this.isConnected) {
+          this.showStatus('⚠️ Not connected to n8n instance', 'warning');
+          return;
+        }
+        
+        this.elements.refreshBtn.disabled = true;
+        await this.loadWorkflows();
+        this.elements.refreshBtn.disabled = false;
+      }
+      
+      async makeApiCall(endpoint, options = {}) {
+        const url = `${this.n8nUrl}${endpoint}`;
+        const headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          ...(this.apiKey && { 'Authorization': `Bearer ${this.apiKey}` }),
+          ...options.headers
+        };
+        
+        const response = await fetch(url, {
+          ...options,
+          headers
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API call failed (${response.status}): ${errorText}`);
+        }
+        
+        return await response.json();
+      }
+      
+      enableWorkflowControls() {
+        this.elements.workflowSelect.disabled = false;
+        this.elements.refreshBtn.disabled = false;
+      }
+      
+      showLoading(show, message = 'Loading...') {
+        const loading = this.elements.loading;
+        if (show) {
+          loading.classList.add('show');
+          loading.querySelector('span').textContent = message;
+        } else {
+          loading.classList.remove('show');
+        }
+      }
+      
+      showStatus(message, type = 'success') {
+        const status = this.elements.statusMsg;
+        status.textContent = message;
+        status.className = `status ${type}`;
+        status.style.display = 'block';
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          status.style.display = 'none';
+        }, 5000);
+      }
+      
+      toggleFullscreen() {
+        const el = document.documentElement;
+        if (el.requestFullscreen && !document.fullscreenElement) {
+          el.requestFullscreen();
+        } else if (document.exitFullscreen && document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+      }
+      
+      initializePreviewSizing() {
+        const sizePreview = () => {
+          const preview = this.elements.preview;
       const header = document.querySelector('header');
+          const configPanel = document.querySelector('.config-panel');
+          const workflowSelector = document.querySelector('.workflow-selector');
       const footer = document.querySelector('footer');
-
-      const pad = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--pad')) || 0;
-      const used = header.offsetHeight + footer.offsetHeight + (pad * 0); // padding is on header/footer already
-      const h = Math.max(420, window.innerHeight - used - (pad * 2));     // 2*pad for main block padding
-      preview.style.height = h + 'px';
-    }
+          const pad = 16; // --pad value
+          
+          const used = header.offsetHeight + configPanel.offsetHeight + 
+                      workflowSelector.offsetHeight + footer.offsetHeight + (pad * 4);
+          const availableHeight = Math.max(500, window.innerHeight - used);
+          
+          preview.style.height = availableHeight + 'px';
+        };
+        
     window.addEventListener('load', sizePreview);
     window.addEventListener('resize', sizePreview);
 
-    // Load workflow JSON
-    fetch('workflow.json')
-      .then(r => r.json())
-      .then(json => {
-        document.getElementById('preview')
-          .setAttribute('workflow', JSON.stringify(json));
-      });
-
-    // Full-screen the entire page for maximum space
-    document.getElementById('fullscreen').addEventListener('click', () => {
-      const el = document.documentElement;
-      if (el.requestFullscreen) el.requestFullscreen();
+        // Initial size after a short delay to ensure DOM is ready
+        setTimeout(sizePreview, 100);
+      }
+    }
+    
+    // Initialize the editor when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      window.n8nEditor = new N8nDynamicEditor();
     });
-
-    // Deep link to your editor
-    const WORKFLOW_EDITOR_URL = 'https://n8n-test.teljoy.io/workflow/Y8kMZ9BJSxwklRWB';
-    document.getElementById('editLink').href = WORKFLOW_EDITOR_URL;
+    
+    // Fallback for older browsers
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!window.n8nEditor) {
+          window.n8nEditor = new N8nDynamicEditor();
+        }
+      });
+    } else {
+      window.n8nEditor = new N8nDynamicEditor();
+    }
+    
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (window.n8nEditor) {
+        window.n8nEditor.cleanup();
+      }
+    });
+    
+    // Warn about unsaved changes
+    window.addEventListener('beforeunload', (e) => {
+      if (window.n8nEditor && window.n8nEditor.hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+        return e.returnValue;
+      }
+    });
   </script>
 </body>
 </html>
