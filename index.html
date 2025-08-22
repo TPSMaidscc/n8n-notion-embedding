@@ -3,7 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>n8n Dynamic Workflow Editor</title>
+  <title>n8n Dynamic Workflow Editor - Simple</title>
+
+  <!-- 
+    🔑 API KEY SETUP:
+    The API key is automatically injected during GitHub Pages deployment.
+    
+    GitHub Environment Setup:
+    1. Go to your repository → Settings → Environments
+    2. Create/select environment: "n8n-notion-embedding" 
+    3. Add variable: N8N_API_KEY = your_actual_api_key
+    4. The GitHub Action will replace __N8N_API_KEY_PLACEHOLDER__ during build
+  -->
 
   <!-- Required scripts for the n8n preview component -->
   <script src="https://cdn.jsdelivr.net/npm/@webcomponents/webcomponentsjs@2/webcomponents-loader.js"></script>
@@ -277,8 +288,8 @@
         
         // Hardcode the n8n instance URL
         this.n8nUrl = 'https://corsproxy.io/?https://n8n-test.teljoy.io';
-        // Auto-connect with API key (replace with your actual API key)
-        this.apiKey = 'n8n_api_1735638024578_EeUWPU8Z4AjLJNpX0W2D8dXUJPy0NeKOYHG5'; // Replace with your actual API key
+        // API key will be injected by GitHub Actions from environment variable
+        this.apiKey = '__N8N_API_KEY_PLACEHOLDER__';
         this.workflows = [];
         this.currentWorkflow = null;
         this.isConnected = false;
@@ -352,9 +363,9 @@
       async autoConnect() {
         console.log('🚀 Auto-connecting to n8n...');
         
-        if (!this.apiKey) {
+        if (!this.apiKey || this.apiKey === '__N8N_API_KEY_PLACEHOLDER__') {
           console.log('❌ No API key configured for auto-connect');
-          this.showStatus('⚠️ No API key configured. Please add your API key to the code.', 'warning');
+          this.showStatus('⚠️ API key not configured. Please check GitHub Actions deployment.', 'warning');
           return;
         }
         
@@ -1390,17 +1401,23 @@
       }
       
       initializePreviewSizing() {
-        const sizePreview = () => {
-          const preview = this.elements.preview;
-      const header = document.querySelector('header');
-          const configPanel = document.querySelector('.config-panel');
-          const workflowSelector = document.querySelector('.workflow-selector');
-      const footer = document.querySelector('footer');
-          const pad = 16; // --pad value
-          
-          const used = header.offsetHeight + configPanel.offsetHeight + 
-                      workflowSelector.offsetHeight + footer.offsetHeight + (pad * 4);
-          const availableHeight = Math.max(500, window.innerHeight - used);
+                 const sizePreview = () => {
+            const preview = this.elements.preview;
+            if (!preview) return; // Safety check
+            
+            const header = document.querySelector('header');
+            const workflowSelector = document.querySelector('.workflow-selector');
+            const footer = document.querySelector('footer');
+            const pad = 16; // --pad value
+            
+            let used = pad * 3; // Base padding
+            
+            // Only add heights for elements that exist
+            if (header) used += header.offsetHeight;
+            if (workflowSelector) used += workflowSelector.offsetHeight;
+            if (footer) used += footer.offsetHeight;
+            
+            const availableHeight = Math.max(500, window.innerHeight - used);
           
           preview.style.height = availableHeight + 'px';
         };
@@ -1447,3 +1464,4 @@
   </script>
 </body>
 </html>
+<!-- Deployment test: Auto-connect simplified version -->
