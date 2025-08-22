@@ -82,6 +82,15 @@
     }
     .preview-status { font-weight: 500; }
     .preview-header > div:last-child { display: flex; gap: 8px; }
+    .btn-primary { 
+      background: #3b82f6; border: 1px solid #2563eb; color: white; 
+      transition: background-color 0.2s ease;
+    }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-primary:disabled { 
+      background: #6b7280; border-color: #6b7280; cursor: not-allowed; 
+      opacity: 0.6; 
+    }
     n8n-demo {
       width: 100%; height: 100%; display: block; 
       background: #0b1220; border: 1px solid #334155; min-height: 800px;
@@ -186,7 +195,44 @@
           </button>
         </div>
       </div>
-    <n8n-demo id="preview" frame="true"></n8n-demo>
+          <!-- Editable Mode Toggle -->
+      <div class="editor-mode-selector" style="padding: 8px 16px; background: rgba(59, 130, 246, 0.1); border-bottom: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: space-between;">
+        <div style="color: #3b82f6; font-size: 14px; font-weight: 500;">
+          <span>🎛️</span> Editor Mode
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <label style="display: flex; align-items: center; gap: 6px; color: #3b82f6; font-size: 13px; cursor: pointer;">
+            <input type="radio" name="editorMode" value="preview" checked style="margin: 0;">
+            👁️ Preview Only
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; color: #3b82f6; font-size: 13px; cursor: pointer;" title="Open n8n editor in popup window">
+            <input type="radio" name="editorMode" value="popup" style="margin: 0;">
+            ✏️ Popup Editor
+          </label>
+          <div style="color: #6b7280; font-size: 12px; font-style: italic; margin-left: 8px;">
+            Opens n8n editor in a dedicated popup window
+          </div>
+        </div>
+      </div>
+      
+      <!-- Preview Component (Default) -->
+      <n8n-demo id="preview" frame="false" style="display: block;"></n8n-demo>
+      
+      <!-- Popup Editor Placeholder (Hidden by default) -->
+      <div id="popupEditorContainer" style="display: none; padding: 40px; text-align: center; background: #0b1220; color: #e2e8f0;">
+        <div style="font-size: 18px; margin-bottom: 20px;">🚀 Popup Editor Mode</div>
+        <div style="font-size: 14px; margin-bottom: 24px; color: #9ca3af;">
+          The n8n editor will open in a dedicated popup window for the best editing experience.
+        </div>
+        <div id="popupEditorInfo" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+          <div style="color: #3b82f6; font-weight: 500; margin-bottom: 8px;">📝 Current Workflow</div>
+          <div id="popupWorkflowName" style="font-size: 16px; margin-bottom: 8px;">No workflow selected</div>
+          <div style="font-size: 13px; color: #9ca3af;">Changes made in the popup will be automatically saved to your n8n instance</div>
+        </div>
+        <button id="openPopupEditorBtn" class="btn btn-primary" style="font-size: 14px; padding: 12px 24px;">
+          <span>🚀</span> Open in Popup Window
+        </button>
+      </div>
     </div>
   </main>
 
@@ -239,7 +285,11 @@
           saveBtn: document.getElementById('saveBtn'),
           statusMsg: document.getElementById('statusMsg'),
           preview: document.getElementById('preview'),
+          popupEditorContainer: document.getElementById('popupEditorContainer'),
+          popupWorkflowName: document.getElementById('popupWorkflowName'),
+          openPopupEditorBtn: document.getElementById('openPopupEditorBtn'),
           previewHeader: document.querySelector('.preview-header'),
+          editorModeRadios: document.querySelectorAll('input[name="editorMode"]'),
           fullscreenBtn: document.getElementById('fullscreen'),
           editLink: document.getElementById('editLink')
         };
@@ -276,6 +326,14 @@
         this.elements.saveBtn.addEventListener('click', () => this.saveWorkflow());
         this.elements.fullscreenBtn.addEventListener('click', () => this.toggleFullscreen());
         
+        // Editor mode switching
+        this.elements.editorModeRadios.forEach(radio => {
+          radio.addEventListener('change', (e) => this.switchEditorMode(e.target.value));
+        });
+        
+        // Popup editor button
+        this.elements.openPopupEditorBtn.addEventListener('click', () => this.openPopupEditor());
+        
         // Auto-save on workflow changes (debounced)
         let saveTimeout;
         this.elements.preview.addEventListener('workflow-changed', () => {
@@ -284,8 +342,101 @@
         });
       }
       
+      switchEditorMode(mode) {
+        console.log(`🎛️ Switching to ${mode} mode`);
+        
+        if (mode === 'preview') {
+          // Show preview, hide popup container
+          this.elements.preview.style.display = 'block';
+          this.elements.popupEditorContainer.style.display = 'none';
+          this.showStatus('👁️ Switched to Preview Only mode', 'info');
+          
+          // Re-load current workflow in preview if available
+          if (this.currentWorkflow) {
+            this.loadWorkflowFromData(this.currentWorkflow, 'Mode Switch - Preview');
+          }
+          
+        } else if (mode === 'popup') {
+          // Show popup container, hide preview
+          this.elements.preview.style.display = 'none';
+          this.elements.popupEditorContainer.style.display = 'block';
+          this.showStatus('🚀 Switched to Popup Editor mode', 'info');
+          
+          // Update popup editor info
+          if (this.currentWorkflow && this.isConnected) {
+            this.elements.popupWorkflowName.textContent = `"${this.currentWorkflow.name}" (ID: ${this.currentWorkflow.id})`;
+            this.elements.openPopupEditorBtn.disabled = false;
+          } else {
+            this.elements.popupWorkflowName.textContent = 'Connect to n8n and select a workflow first';
+            this.elements.openPopupEditorBtn.disabled = true;
+            this.showStatus('⚠️ Connect to n8n and select a workflow to use Popup Editor', 'warning');
+          }
+        }
+      }
+      
+      openPopupEditor() {
+        if (!this.currentWorkflow || !this.isConnected) {
+          this.showStatus('❌ No workflow selected or not connected to n8n', 'error');
+          return;
+        }
+        
+        console.log('🚀 Opening popup editor for workflow:', this.currentWorkflow.name);
+        
+        // Get clean n8n URL (without proxy)
+        const cleanUrl = this.n8nUrl.includes('corsproxy.io') 
+          ? decodeURIComponent(this.n8nUrl.split('corsproxy.io/?')[1]) 
+          : this.n8nUrl;
+          
+        // Build the editor URL
+        const editorUrl = `${cleanUrl}/workflow/${this.currentWorkflow.id}`;
+        
+        // Open in popup window with optimal settings
+        const popup = window.open(
+          editorUrl,
+          'n8nEditor',
+          'width=1400,height=900,scrollbars=yes,resizable=yes,status=no,menubar=no,toolbar=no'
+        );
+        
+        if (popup) {
+          this.showStatus(`🚀 Opened "${this.currentWorkflow.name}" in popup editor`, 'success');
+          console.log('✅ Popup editor opened successfully');
+          
+          // Focus the popup window
+          popup.focus();
+          
+          // Optional: Listen for popup close and refresh workflow
+          const checkClosed = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(checkClosed);
+              console.log('📝 Popup editor closed, refreshing workflow...');
+              this.showStatus('📝 Popup editor closed. Refreshing workflow data...', 'info');
+              
+              // Refresh the current workflow from API
+              if (this.currentWorkflow && this.isConnected) {
+                setTimeout(() => {
+                  this.loadWorkflow(this.currentWorkflow.id);
+                }, 1000); // Small delay to allow n8n to save changes
+              }
+            }
+          }, 1000);
+          
+        } else {
+          this.showStatus('❌ Failed to open popup. Check if popups are blocked.', 'error');
+          console.log('❌ Popup blocked or failed to open');
+        }
+      }
+      
+
+      
       forcePreviewRefresh() {
         console.log('💥 ===== FORCING COMPLETE PREVIEW REFRESH =====');
+        
+        // Only refresh if we're in preview mode
+        const currentMode = document.querySelector('input[name="editorMode"]:checked').value;
+        if (currentMode !== 'preview') {
+          console.log('ℹ️ Not in preview mode, skipping component refresh');
+          return;
+        }
         
         // Step 1: Show loading state
         this.hidePreviewError();
@@ -301,7 +452,8 @@
         // Step 3: Create brand new component
         const newElement = document.createElement('n8n-demo');
         newElement.id = 'preview';
-        newElement.setAttribute('frame', 'true');
+        newElement.setAttribute('frame', 'false');
+        newElement.style.display = 'block'; // Ensure it's visible in preview mode
         
         // Step 4: Add it back to the DOM
         container.appendChild(newElement);
@@ -405,7 +557,7 @@
         // Create completely new component
         const newElement = document.createElement('n8n-demo');
         newElement.id = 'preview';
-        newElement.setAttribute('frame', 'true');
+        newElement.setAttribute('frame', 'false');
         
         // Replace the old component
         container.replaceChild(newElement, oldElement);
@@ -600,26 +752,38 @@
         console.log('7. Final cleaned workflow keys:', Object.keys(legacyFormatWorkflow));
         console.log('8. Final cleaned workflow:', legacyFormatWorkflow);
         
-        // Set workflow data on the fresh component (component was already refreshed)
-        console.log('9. Setting workflow data on fresh component...');
-        this.elements.preview.setAttribute('workflow', JSON.stringify(legacyFormatWorkflow));
-        console.log('10. Workflow data set');
+        // Check current editor mode and load accordingly
+        const currentMode = document.querySelector('input[name="editorMode"]:checked').value;
         
-        // Check if loading was successful
-        setTimeout(() => {
-          console.log('=== CHECKING FRESH COMPONENT LOAD (1s) ===');
-          const success = this.checkComponentState('Fresh component check');
+        if (currentMode === 'preview') {
+          // Set workflow data on the fresh component (component was already refreshed)
+          console.log('9. Setting workflow data on fresh component (Preview Mode)...');
+          this.elements.preview.setAttribute('workflow', JSON.stringify(legacyFormatWorkflow));
+          console.log('10. Workflow data set');
           
-          if (success) {
-            console.log('✅ Fresh component loaded successfully!');
-            this.hidePreviewError();
-            this.showStatus(`✅ Preview loaded: "${workflowData.name || 'Unnamed'}"`, 'success');
-          } else {
-            console.log('❌ Even fresh component failed to load');
-            this.showPreviewError();
-            this.showStatus(`❌ Preview failed to load: "${workflowData.name || 'Unnamed'}"`, 'error');
-          }
-        }, 1000);
+          // Check if loading was successful
+          setTimeout(() => {
+            console.log('=== CHECKING FRESH COMPONENT LOAD (1s) ===');
+            const success = this.checkComponentState('Fresh component check');
+            
+            if (success) {
+              console.log('✅ Fresh component loaded successfully!');
+              this.hidePreviewError();
+              this.showStatus(`✅ Preview loaded: "${workflowData.name || 'Unnamed'}"`, 'success');
+            } else {
+              console.log('❌ Even fresh component failed to load');
+              this.showPreviewError();
+              this.showStatus(`❌ Preview failed to load: "${workflowData.name || 'Unnamed'}"`, 'error');
+            }
+          }, 1000);
+          
+        } else if (currentMode === 'popup') {
+          // Update popup editor info
+          console.log('9. Updating popup editor info...');
+          this.elements.popupWorkflowName.textContent = `"${workflowData.name}" (ID: ${workflowData.id})`;
+          this.elements.openPopupEditorBtn.disabled = false;
+          this.showStatus(`✅ Workflow ready for popup editing: "${workflowData.name}"`, 'success');
+        }
         
         // Enable save button if we have n8n connection
         if (this.isConnected) {
