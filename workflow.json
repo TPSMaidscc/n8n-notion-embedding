@@ -1,1045 +1,1700 @@
 {
   "nodes": [
     {
-      "parameters": {},
-      "id": "307a311c-4e97-4ed7-8314-a747af80209d",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Start Tutorial",
-      "type": "n8n-nodes-base.manualTrigger",
-      "creator": "Lucas Peyrin",
-      "position": [
-        900,
-        440
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
       "parameters": {
-        "path": "/tutorial/api/menu",
-        "responseMode": "lastNode",
-        "options": {}
+        "content": "# 🛠️ Tool Actions & Response Template\n**Welcome!** This template helps you design and implement tool actions with consistent response handling.\n\n**🎯 Purpose:**\n• Provide a ready-to-use structure for tool integrations\n• Standardize success, error, and retry responses\n• Ensure clean conditional logic for different outcomes\n• Make tool workflows predictable and reusable\n\n**🚀 How to Use:** Use this template as your starting point for building reliable tool action workflows.\n",
+        "height": 520,
+        "width": 600,
+        "color": 2
       },
-      "id": "ce59d96d-2554-4d08-b5d9-b6476fa240e6",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "1. The Kitchen (GET /menu)",
-      "type": "n8n-nodes-base.webhook",
-      "creator": "Lucas Peyrin",
+      "id": "e2ac95e6-8e2d-45bd-a523-33701401a94d",
+      "name": "🚀 S0.0 Masterclass Intro",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
       "position": [
-        2220,
-        440
-      ],
-      "webhookId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-      "typeVersion": 2,
-      "notes": "© 2025 Lucas Peyrin"
+        -280,
+        -220
+      ]
     },
     {
       "parameters": {
-        "assignments": {
-          "assignments": [
+        "content": "# 🔍 Before Implementation, validate the following:\n\n• ✅ API endpoints documented & accessible\n• ✅ Response schemas mapped out\n• ✅ Error scenarios identified\n• ✅ Fallback strategies planned\n",
+        "height": 220,
+        "width": 600,
+        "color": 2
+      },
+      "id": "44959ce7-f331-4b36-8f15-3edbf238524c",
+      "name": "✅ S0.2 Pre-Flight Check",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
             {
-              "id": "12345",
-              "name": "item",
-              "type": "string",
-              "value": "Pizza"
-            },
-            {
-              "id": "67890",
-              "name": "price",
-              "type": "number",
-              "value": 12
+              "id": "78f68550-98cc-480f-a527-2dbfeb903be7",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
             }
-          ]
+          ],
+          "combinator": "and"
         },
         "options": {}
       },
-      "id": "43e190c3-cec7-4ffc-ba97-b1418e285465",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Prepare Menu Data",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
       "position": [
-        2440,
-        440
+        580,
+        100
       ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
+      "id": "e0b4d716-3bd2-46d2-8cf5-aae6dad9a943",
+      "name": "Event With Condition"
     },
     {
       "parameters": {
-        "url": "={{ $json.base_url }}/tutorial/api/menu",
+        "content": "# 🔀 Event Options: With or Without Condition  \n\n## **1️⃣ Event With Condition**  \n• Use this when the outcome (Event of the tool) depends on a rule.  \n• Example: “If the tool argument X = true, then continue. Otherwise, go to error.”  \n• The condition is checked against the response field, using equals/greater/contains depending on the rule.  \n• You can add a new condition by duplicating this node and connecting it to the trigger. \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n## **2️⃣ Event Without Condition**  \n• Use this when you want the workflow to continue regardless of the tool’s response.  \n• You can skip the condition step and move directly to the next action.  \n",
+        "height": 760,
+        "width": 620,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        360,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "b67aa035-da0d-43b9-b069-99dafda7adbb",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# 🌐 API Calls  \n\n• An event’s action can be **one API call** or **multiple API calls**.  \n• Run them **in parallel** if they don’t depend on each other.  \n• Run them **sequentially** if the output of one API is needed as the input for the next.  \n\nFor a detailed tutorial on how to use APIs, please invest some time in learning this tutorial: https://n8n.io/workflows/5171-learn-api-fundamentals-with-an-interactive-hands-on-tutorial-workflow/ ",
+        "height": 760,
+        "width": 640
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1020,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "f6398529-f660-45bc-b29b-72a8fdd5c7a8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
         "options": {}
       },
-      "id": "6b5e5637-3c10-47e2-8053-3ed7f8266bb2",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "1. The Customer (GET Menu Item)",
       "type": "n8n-nodes-base.httpRequest",
-      "creator": "Lucas Peyrin",
+      "typeVersion": 4.2,
       "position": [
-        1900,
-        440
+        1140,
+        40
       ],
-      "typeVersion": 4.1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "## Tutorial - What is an API?\n\nWelcome! This workflow will teach you the basics of APIs (Application Programming Interfaces).\n\n**What is an API?**\nThink of it like ordering food at a restaurant.\n- **You** are the \"Client\" (the **HTTP Request** node). You want something.\n- The **Kitchen** is the \"Server\" (the **Webhook** node). It has the data/service you want.\n- The **API** is the **Waiter and the Menu**. It's the set of rules and options for making a request and getting a response.\n\n\n**What is an Endpoint?**\nAn endpoint is a specific address for a specific action. For example, `GET /menu` is one endpoint to get the menu, and `POST /review` is another to submit a review. Each webhook in this tutorial represents one endpoint.\n\n**How to use this tutorial:**\n1.  **Activate** the workflow (toggle on the top right).\n2.  **Configure the Base URL** (see the yellow note to the left).\n3.  Click **\"Execute Workflow\"**. The workflow will run from top to bottom.\n4.  Explore each \"Lesson\" by clicking on the **HTTP Request** node (the Customer) and its corresponding **Webhook** node (the Kitchen).\n\n\n**➡️ How to See the Data:**\nWhen you run this, the Webhook nodes run in the background. To see the data they received, go to the **\"Executions\"** tab of this workflow. You will see a separate execution for each API call!",
-        "height": 768,
-        "width": 800
-      },
-      "id": "6c33033a-c588-44a2-911b-a518ea14a758",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        260,
-        -120
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "#### Lesson 1: The Basics (Method & URL)\n\nThis is the simplest possible request.\n\n- **URL (Uniform Resource Locator):** This is the **address of the restaurant's kitchen**. The HTTP Request node needs to know exactly where to send the order. We use an expression to get the Webhook's address automatically from our configuration.\n\n- **Method: `GET`**: This is **what you want to do**. `GET` is used to **retrieve** or **get** information. It's like asking the waiter, \"What's on the menu today?\" `GET` requests are simple and don't contain a \"body\" payload.\n\n\n**➡️ Look at the output of the HTTP Request node. It received exactly what the `Respond to Webhook` node sent back!**",
-        "height": 512,
-        "width": 864,
-        "color": 7
-      },
-      "id": "0edad8f7-5fbf-4d2d-955b-8d710a213f7b",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note1",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1840,
-        140
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.base_url }}/tutorial/api/order",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "extra_cheese",
-              "value": "true"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "f7db2d44-98d4-4328-8fc3-0f59191f1dbc",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "2. The Customer (GET with Query Params)",
-      "type": "n8n-nodes-base.httpRequest",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1900,
-        1120
-      ],
-      "typeVersion": 4.1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "path": "/tutorial/api/order",
-        "responseMode": "lastNode",
-        "options": {}
-      },
-      "id": "82a79ded-3c67-4eb2-81e8-b012180958bd",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "2. The Kitchen (GET /order)",
-      "type": "n8n-nodes-base.webhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2220,
-        1120
-      ],
-      "webhookId": "b2c3d4e5-f6a7-8901-2345-67890abcdef1",
-      "typeVersion": 2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "12345",
-              "name": "order",
-              "type": "string",
-              "value": "Pizza with extra cheese"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "68582e42-23d6-4eb0-bcff-a440e9cc6e80",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Prepare Cheese Pizza",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2660,
-        1020
-      ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "12345",
-              "name": "order",
-              "type": "string",
-              "value": "Plain Pizza"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "7d12be9f-d9e3-47d1-b959-cd345d590eee",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Prepare Plain Pizza",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2660,
-        1220
-      ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "#### Lesson 2: Customizing a Request (Query Parameters)\n\nWhat if you want to customize your order? That's what Query Parameters are for.\n\n**Query Parameters:** These are simple `key=value` options added to the end of the URL after a `?`. They are used to filter, sort, or specify what you want.\n\nIt's like telling the waiter, \"I'll have the pizza... **and can you add extra cheese?**\"\n\nThe full URL sent by the HTTP Request node looks like this:\n`.../tutorial/api/order?extra_cheese=true`\n\n**⚠️ Important:** Because they are part of the URL, **all query parameter values are treated as strings!** The webhook receives `\"true\"` (a string), not `true` (a boolean). The IF node is set to a \"loose\" comparison to handle this correctly.\n\n**➡️ The Webhook node uses an IF node to check for this parameter and changes its response. Try setting the value to `false` in the HTTP Request node and run it again!**",
-        "height": 720,
-        "width": 1056,
-        "color": 7
-      },
-      "id": "93de3f1b-3fc7-471b-b133-e0bb5f9ca838",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note2",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1840,
-        680
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
+      "id": "96124d0f-766d-4dcf-8698-4c4cd7ec5302",
+      "name": "HTTP Request",
+      "disabled": true
     },
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $json.base_url }}/tutorial/api/review",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        40
+      ],
+      "id": "c6a92469-fe5f-4c01-9422-1e73f0d388f1",
+      "name": "HTTP Request1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        300
+      ],
+      "id": "47352818-2bc7-48e0-9a72-ac7bc7a4da2a",
+      "name": "HTTP Request3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3a0deab5-1c2c-4d6c-a737-383757be9d25",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1900,
+        40
+      ],
+      "id": "5fac98a8-41f2-410f-ad98-0b7244f46287",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "# 🧩 Conditions on API Responses  \n\n• You can add conditions based on the API response.  \n• Make sure you know the possible response formats in advance (or at least the scenarios you care about).  \n• The API output is visible when you run the previous node, and it will appear as the input to this conditional block.  \n",
+        "height": 760,
+        "width": 580,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1700,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "8af3e454-594b-405d-b654-0bdd5cb4ffbc",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6b2cc958-eb53-43ec-9bee-31d8ffa9f2d7",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1900,
+        320
+      ],
+      "id": "0d555b55-1c22-4bef-8eb7-52c93ab90010",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "# ️⚡ Actions & Tool Response\n \nEach condition decides the next step, it can be a combination of the following:  \n\n## **1️⃣ Action**  \n• Continue with another automated step.  \n• Example: “If response.status = success → send confirmation email.”  \n\n## **2️⃣ Transfer to Human Agent**  \n• Route the flow to a person when automation isn’t enough.  \n• Example: “If response.error_code = AUTH_FAILED → hand over to support agent.”  \n\n## **3️⃣ Other**  \n• Handle special cases that don’t fit standard paths.  \n• Example: “If response contains warning → log it and continue workflow.”  \n\n## **4️⃣ Tool Response**  \n• Use the raw tool output as a branch in the flow.  \n• Example: “If response.message = ‘out of office’ → trigger follow-up email.”  \n\n📌 Tip: Make sure you know the tool’s possible responses in advance, so you \ncan set rules for all important scenarios. The output of the API will appear here as \nthe input for these conditions.  \n",
+        "height": 760,
+        "width": 580
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2580,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "ce8448f2-b94c-4dae-acce-d7253966c0dc",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2380,
+        -60
+      ],
+      "id": "5160a091-90fe-4633-ab1e-2d246d96a032",
+      "name": "Transfer to Human Agent",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cab2ef87-5f81-4e70-bc0e-801d7e03542f",
+              "name": "Tool Response",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2380,
+        80
+      ],
+      "id": "e970fa31-5f31-4f7d-aecd-c4d48f77a868",
+      "name": "Tool Response"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2320,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "65b61415-d357-4f33-b708-f430545e4b0f",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "resource": "label",
+        "operation": "create",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2380,
+        -200
+      ],
+      "id": "685caaa8-07bf-4226-9717-13f0d3bcfd8c",
+      "name": "Send Email to Shadi",
+      "webhookId": "043ae929-91cb-492c-aed9-4b2c300509ef",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "5jVG73zQigHqwtTz",
+          "name": "N8nGmailAccount"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "content": "# 🔗 Merging Tool Responses  \n\nNow we merge all your tool responses.  \nOnly the **conditions that are satisfied** will be included in the merge.  \n\nThe merged output is then sent back to the bot as the final response.  \n\n⚙️ You can change the number of inputs by double-clicking the node and updating the field **“Number of Inputs”**.  \n\nCheck out the Sample tool \"get_weather\" below.",
+        "height": 760,
+        "width": 560,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        3180,
+        -220
+      ],
+      "typeVersion": 1,
+      "id": "e46c1760-3346-41a7-8186-e3afff8b99d5",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2380,
+        240
+      ],
+      "id": "82597178-786c-4abe-ae4a-7a9511d5300a",
+      "name": "Tool Response2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cab2ef87-5f81-4e70-bc0e-801d7e03542f",
+              "name": "Tool Response",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2380,
+        380
+      ],
+      "id": "6641ffcb-5286-4560-8327-f08b113f6924",
+      "name": "Tool Response3"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3380,
+        100
+      ],
+      "id": "023efe1e-89a1-47bb-b653-b48025feed37",
+      "name": "Final Tool Response"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        1060
+      ],
+      "id": "d126746f-0e64-4117-83ba-3a4cb3d5923d",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -40,
+        100
+      ],
+      "id": "3b10c4ab-4a70-4c6a-afd9-e740348036de",
+      "name": "When Executed by Another Workflow",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "e36b157d-bbfb-4e66-ad77-7fed91f09808",
+      "name": "🧪 Tool Arguments (Defaults)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        1060
+      ],
+      "notesInFlow": true,
+      "notes": "Mimics tool arguments so you can click Execute without sending a payload."
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://geocoding-api.open-meteo.com/v1/search?name=' \n   + encodeURIComponent($json.parameters.city) \n   + '&count=1&language=en&format=json' }}\n",
+        "options": {}
+      },
+      "id": "53868a77-bdb3-4943-b85e-63f83d596118",
+      "name": "🗺️ Geocode City (Open-Meteo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        1060
+      ],
+      "notesInFlow": true,
+      "notes": "Returns coordinates for the requested city. No auth needed."
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8ad6250f-6ff7-4610-ad47-d5e1e24b5161",
+              "name": "results[0].latitude",
+              "value": "={{ $json.results[0].latitude }}",
+              "type": "number"
+            },
+            {
+              "id": "a7f7b173-f9df-4ecb-9e3e-facd551c5886",
+              "name": "results[0].longitude",
+              "value": "={{ $json.results[0].longitude }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "29392dc9-c857-4123-ab93-786cea2bd469",
+      "name": "🧭 Pick lat/lon + Labels",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        580,
+        1060
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{'https://api.open-meteo.com/v1/forecast?latitude=' + $json.results[0].latitude + '&longitude=' + $json.results[0].longitude + '&current=temperature_2m,wind_speed_10m'}}",
+        "options": {}
+      },
+      "id": "47aeed60-377d-41fd-9346-adc7add971e5",
+      "name": "🌤️ Current Weather (Open-Meteo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        840,
+        1060
+      ],
+      "notesInFlow": true,
+      "onError": "continueErrorOutput",
+      "notes": "Returns current temperature and wind speed. No auth needed."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{$json.current.temperature_2m}}",
+              "rightValue": "={{$('🧪 Tool Arguments (Defaults)').json.warmThreshold}}",
+              "operator": {
+                "type": "number",
+                "operation": "largerOrEqual"
+              },
+              "id": "039ded1d-0943-45ba-a4f2-7ca89f779b73"
+            },
+            {
+              "id": "2c849284-254c-41f7-abbd-264877352d66",
+              "leftValue": "={{ $json.current.temperature_2m }}",
+              "rightValue": 16,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "looseTypeValidation": false
+        }
+      },
+      "id": "8218a46a-53f4-4114-a58e-93580798e46c",
+      "name": "🌡️ Warm?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        980
+      ],
+      "notesInFlow": true,
+      "notes": "True if temperature >= warmThreshold."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{$json.current.wind_speed_10m}}",
+              "rightValue": "={{$('🧪 Tool Arguments (Defaults)').json.windyThreshold}}",
+              "operator": {
+                "type": "number",
+                "operation": "largerOrEqual"
+              },
+              "id": "3570164b-6149-48de-b168-4c36db7cd4b6"
+            },
+            {
+              "id": "c28440a9-df1b-48bd-a2a7-2240eae653c0",
+              "leftValue": "={{ $json.current.wind_speed_10m }}",
+              "rightValue": "=17",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "id": "151ceb51-47e5-40dc-a83d-5e57884ad928",
+      "name": "🍃 Windy?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        1160
+      ],
+      "notesInFlow": true,
+      "notes": "True if wind speed >= windyThreshold."
+    },
+    {
+      "parameters": {
+        "url": "https://jsonplaceholder.typicode.com/posts",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
             {
-              "name": "comment",
-              "value": "The pizza was amazing!"
+              "name": "title",
+              "value": "={{ 'Warm Weather Notice for ' + $node[\"🧪 Tool Arguments (Defaults)\"].json.parameters.city }}\n"
             },
             {
-              "name": "rating",
-              "value": 5
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "340f6534-c6fd-4f58-bd28-1406d1500b88",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "3. The Customer (POST with Body)",
-      "type": "n8n-nodes-base.httpRequest",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1900,
-        1720
-      ],
-      "typeVersion": 4.1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "/tutorial/api/review",
-        "responseMode": "lastNode",
-        "options": {}
-      },
-      "id": "e19695ba-cd4a-4a78-9911-74c9166d6866",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "3. The Kitchen (POST /review)",
-      "type": "n8n-nodes-base.webhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2220,
-        1720
-      ],
-      "webhookId": "c3d4e5f6-a7b8-9012-3456-7890abcdef12",
-      "typeVersion": 2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "12345",
-              "name": "status",
-              "type": "string",
-              "value": "review_received"
+              "name": "body",
+              "value": "={{'It is warm (' + $json.current.temperature_2m + '°C).'}}"
             },
             {
-              "id": "67890",
-              "name": "your_comment",
-              "type": "string",
-              "value": "={{ $json.body.comment }}"
-            },
-            {
-              "id": "91011",
-              "name": "your_rating",
-              "type": "number",
-              "value": "={{ $json.body.rating }}"
+              "name": "userId",
+              "value": "1"
             }
           ]
         },
         "options": {}
       },
-      "id": "8fd30d4e-0574-4485-9507-5859ebd3b171",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Process Review Data",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2440,
-        1720
-      ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "#### Lesson 3: Sending Data (POST & Body)\n\nSometimes, you don't want to *get* data, you want to *send* it.\n\n- **Method: `POST`**: This method is used to **send new data** to the server to create or update a resource. It's like handing the waiter a completed customer feedback card.\n\n- **Body:** This is the **actual data you are sending**. Unlike a `GET` request, a `POST` request has a \"body\" where you can put complex data, like a JSON object. This is much more powerful than query parameters for sending information.\n\n\n**➡️ The HTTP Request sends a JSON object in its body. The Webhook receives it and includes your comment in its response. Check the \"Executions\" panel to see the full body the webhook received!**",
-        "height": 476,
-        "width": 1056,
-        "color": 7
-      },
-      "id": "e8c36196-17a4-4139-b03b-3d694b3c095c",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note3",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1840,
-        1440
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.base_url }}/tutorial/api/secret-dish",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-api-key",
-              "value": "super-secret-key"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "0ae4180f-1f48-4fc3-a904-39aef09316cc",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "4. The Customer (GET with Headers/Auth)",
+      "id": "266e6b7e-6055-473b-8f55-a0ff029a86f7",
+      "name": "✅ Action: Create Warm Notice (JSONPlaceholder)",
       "type": "n8n-nodes-base.httpRequest",
-      "creator": "Lucas Peyrin",
+      "typeVersion": 4.2,
       "position": [
-        1900,
-        2600
-      ],
-      "typeVersion": 4.1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "path": "/tutorial/api/secret-dish",
-        "responseMode": "responseNode",
-        "options": {}
-      },
-      "id": "1b9fba21-41fe-405e-b946-c62c7752a150",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "4. The Kitchen (GET /secret-dish)",
-      "type": "n8n-nodes-base.webhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2220,
-        2600
-      ],
-      "webhookId": "d4e5f6a7-b8c9-0123-4567-890abcdef123",
-      "typeVersion": 2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "#### Lesson 4: Identification (Headers & Auth)\n\nHeaders contain meta-information *about* your request. They're not part of the data itself, but they provide important context. Authentication is a common use case.\n\n- **Headers:** Think of this as **showing your VIP membership card** or whispering a secret password to the waiter. It's information that proves who you are or what your request's properties are.\n\n- **Authentication (Auth):** This is the process of proving your identity. Here, we use a custom header (`x-api-key`) as a \"secret key\". In the real world, this is how most APIs control access.\n\n\n**➡️ The Webhook checks for the correct secret key in the headers. If it's wrong or missing, it denies the request with a `401 Unauthorized` status code. Try changing the key in the HTTP Request node!**",
-        "height": 908,
-        "width": 1056,
-        "color": 7
-      },
-      "id": "a16db587-368e-49a6-b34e-906bea520266",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note4",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1840,
-        1960
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "url": "={{ $json.base_url }}/tutorial/api/slow-service",
-        "options": {
-          "timeout": 2000
-        }
-      },
-      "id": "16b0c963-80e0-4855-8b43-fe1f6e674f0f",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "5. The Customer (Request with Timeout)",
-      "type": "n8n-nodes-base.httpRequest",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1900,
-        3320
-      ],
-      "typeVersion": 4.1,
-      "onError": "continueErrorOutput",
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "path": "/tutorial/api/slow-service",
-        "responseMode": "lastNode",
-        "options": {}
-      },
-      "id": "e75a6898-175a-4761-bb49-58489a6af7c5",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "5. The Kitchen (GET /slow-service)",
-      "type": "n8n-nodes-base.webhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2220,
-        3320
-      ],
-      "webhookId": "e5f6a7b8-c9d0-1234-5678-90abcdef1234",
-      "typeVersion": 2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "12345",
-              "name": "status",
-              "type": "string",
-              "value": "Finally, your food is here!"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "0a7fea69-ed25-49e1-a10b-35c36bcbce67",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Prepare Slow Response",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2660,
-        3320
-      ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "amount": 3
-      },
-      "id": "70af89bc-5293-4359-9a95-a26503dcf0ed",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Wait 3 seconds",
-      "type": "n8n-nodes-base.wait",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2440,
-        3320
-      ],
-      "webhookId": "86b44ff3-7d31-4027-a1cd-df67f9ab974a",
-      "typeVersion": 1.1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "version": 2,
-            "leftValue": "",
-            "caseSensitive": true,
-            "typeValidation": "strict"
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "ca861c2d-78d9-403b-8bab-28d8e7dcf39c",
-              "operator": {
-                "name": "filter.operator.equals",
-                "type": "string",
-                "operation": "equals"
-              },
-              "leftValue": "={{ $json.headers['x-api-key'] }}",
-              "rightValue": "super-secret-key"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "8bfbd90e-4ee7-46fb-87b5-f74b06851afa",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "IF Authorized",
-      "type": "n8n-nodes-base.if",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2440,
-        2600
-      ],
-      "typeVersion": 2.2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "version": 2,
-            "leftValue": "",
-            "caseSensitive": true,
-            "typeValidation": "loose"
-          },
-          "combinator": "and",
-          "conditions": [
-            {
-              "id": "ca861c2d-78d9-403b-8bab-28d8e7dcf39c",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              },
-              "leftValue": "={{ $json.query.extra_cheese }}",
-              "rightValue": "your-api-key-for-example"
-            }
-          ]
-        },
-        "looseTypeValidation": true,
-        "options": {}
-      },
-      "id": "fe3fb56b-aefe-4c54-be41-f5764808a717",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "IF extra cheese",
-      "type": "n8n-nodes-base.if",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2420,
-        1120
-      ],
-      "typeVersion": 2.2,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "## ✨ **CONFIGURATION REQUIRED** ✨\n\nTo use this interactive tutorial, you need to tell the \"Customer\" nodes where to find the \"Kitchen\" nodes.\n\n### **1. Get your Webhook URL**\n\n*   **Activate** this workflow using the toggle switch at the top right of the screen.\n*   Open any Webhook node in this workflow (e.g., `1. The Kitchen (GET /menu)`).\n*   Go to the **Production URL** field and click the copy button.\n\n### **2. Update the CONFIGURATION Node**\n\n*   Open the `CONFIGURATION` node (the one this note is pointing to).\n*   In the **Value** field, **paste the full URL** you just copied.\n\n\nThat's it! Now you can run the workflow, and all the HTTP Request nodes will know how to call your webhooks.",
-        "height": 764,
-        "width": 700,
-        "color": 3
-      },
-      "id": "7b29491a-ce86-4bd9-883e-fba80d66c8df",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note6",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1100,
-        -120
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
-            {
-              "id": "7edededc-2f40-4b8e-b8db-ab4816f1a28e",
-              "name": "base_url",
-              "type": "string",
-              "value": "={{ $json.your_n8n_webhook_url.match(/^(https?:\\/\\/[^\\/]+)\\/(webhook-test|webhook|v1|[^\\/]+)/)[1] + '/' + $json.your_n8n_webhook_url.match(/^(https?:\\/\\/[^\\/]+)\\/(webhook-test|webhook|v1|[^\\/]+)/)[2].replace('webhook-test','webhook') }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "dbcad255-1f59-47f1-8816-ea11fd1e3919",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Base URL",
-      "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1500,
-        440
-      ],
-      "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "### ⚠️ **Security Best Practice**\n\nFor this tutorial, we are putting the API key directly in the header. \n\n**In a real project, NEVER do this!**\n\nAlways use n8n's built-in **Credentials** system to store and manage secret keys. You would create a \"Header Auth\" credential and select it in the HTTP Request node's \"Authentication\" parameter. This keeps your secrets safe and out of your workflow JSON.",
-        "height": 496,
-        "width": 304,
-        "color": 3
-      },
-      "id": "0b7f1fee-2997-48e8-9b54-f0415993f0ac",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note8",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1860,
-        2280
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "{\n  \"dish\": \"The Chef's Special Truffle Pasta\"\n}",
-        "options": {}
-      },
-      "id": "7e17aacc-0692-46e5-bc7b-b84b9dd399fe",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Respond with Secret",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2660,
-        2480
-      ],
-      "typeVersion": 1.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "respondWith": "text",
-        "responseBody": "You are not authorized to see the secret dish.",
-        "options": {
-          "responseCode": 401
-        }
-      },
-      "id": "253e4443-0df0-46eb-88c5-85acf775e6b7",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Respond: Unauthorized (401)",
-      "type": "n8n-nodes-base.respondToWebhook",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2660,
-        2680
-      ],
-      "typeVersion": 1.4,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "# What other services give you\n\nReal-world APIs have documentation that tells developers how to use them. This is what the documentation for our little tutorial API would look like. To put you in context, you would see this documentation and create http request nodes accordingly.\n\n**Remember**, AI can help you !\n\n\n# API Documentation Example\n\nA simple API to demonstrate http requests in n8n.\n\n## API Endpoints\n\n### GET /tutorial/api/menu\n\n**Summary:** Get the menu\n\n**Responses:**\n*   `200 OK`: The restaurant menu.\n\n---\n\n### GET /tutorial/api/order\n\n**Summary:** Get a customized order\n\n**Parameters:**\n*   `extra_cheese` (query, string, example: `true`): Whether to add extra cheese.\n\n\n**Responses:**\n*   `200 OK`: Your customized pizza order.\n\n---\n\n### POST /tutorial/api/review\n\n**Summary:** Submit a review\n\n**Request Body (application/json):**\n```json\n{\n  \"comment\": \"string\",\n  \"rating\": 0\n}\n```\n*   `comment` (string): The review comment.\n*   `rating` (integer): The rating given (e.g., 1-5).\n\n\n**Responses:**\n*   `200 OK`: Confirmation of review receipt.\n\n---\n\n### GET /tutorial/api/secret-dish\n\n**Summary:** Get the secret dish (Auth Required)\n\n**Authentication:** Requires API Key. See [Authentication](https://docs.n8n.io/integrations/builtin/credentials/httprequest/) section for details.\n\n**Responses:**\n*   `200 OK`: The secret dish.\n*   `401 Unauthorized`: Authentication is required or invalid.\n\n---\n\n### GET /tutorial/api/slow-service\n\n**Summary:** A slow endpoint to test timeouts\n\n**Responses:**\n*   `200 OK`: A delayed response.\n\n---\n\n## Authentication\n\nThis API uses an API Key for authentication on certain endpoints.\n\n### API Key Authentication (`ApiKeyAuth`)\n\n*   **Type:** API Key\n*   **Location:** Header\n*   **Header Name:** `x-api-key`\n\n\nTo authenticate, include your API key in the `x-api-key` header of your request.\n\n**Example:**\n```\nGET /tutorial/api/secret-dish\nHost: your-api-domain.com\nx-api-key: YOUR_API_KEY_HERE\n```",
-        "height": 2096,
-        "width": 696,
-        "color": 6
-      },
-      "id": "7a1f500f-722e-4703-9419-e8028dce9429",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "OpenAPI Spec",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2920,
+        1560,
         680
       ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
+      "notesInFlow": true,
+      "notes": "No auth. Demonstrates an action when a condition is met."
     },
     {
       "parameters": {
-        "content": "![Kitch on fire](https://media2.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3MXIyOXBhZHhueGxnZjZhbnQ3MmRtbzg5aW9mZ3VrMGN2bGQ0Y3VidyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/l4FGpeeBs3XLWxqrm/giphy.webp)",
-        "height": 272,
-        "width": 256,
-        "color": 7
+        "mode": "raw",
+        "jsonOutput": "={\n  \"Weather Announcement\": \"{{ $json.title }}\"\n}\n",
+        "includeOtherFields": true,
+        "options": {}
       },
-      "id": "42bc1767-8d3d-47c2-81f3-0cfbd4660666",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note9",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
+      "id": "4a8da40b-16f4-4aa4-b11d-5b847c2960b1",
+      "name": "📩 Tool Response (Warm Action)",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        2340,
-        1020
+        1840,
+        680
       ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "![Kitch on fire](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGgyNmxobWE5ZjhydXdwM2o1bWkwMjZna3A1OTdiOHNpeGE5cW5wNSZlcD12MV9naWZzX3NlYXJjaCZjdD1n/2ka4S8LMiGxA371PD3/giphy.webp)",
-        "height": 224,
-        "width": 176,
-        "color": 7
-      },
-      "id": "b544a995-b9e5-408c-bf0f-f2cf71e19510",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note10",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2720,
-        440
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
-    },
-    {
-      "parameters": {
-        "content": "![Kitch on fire](https://media4.giphy.com/media/v1.Y2lkPWVjZjA1ZTQ3YWo1ODNsNm9pZHh6dDBhNnp6bWRvaTRuc3hxbWlhd3NoMW40eHN4dyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/V1gX8pwYRRDoxFh6lJ/200.webp)",
-        "width": 256,
-        "color": 7
-      },
-      "id": "5ae884a9-8520-4102-a4a0-f72072ccf40d",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note11",
-      "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
-      "position": [
-        2620,
-        1720
-      ],
-      "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
+      "notesInFlow": true,
+      "notes": "Here we include tool_response from the action."
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "7edededc-2f40-4b8e-b8db-ab4816f1a28e",
-              "name": "your_n8n_webhook_url",
-              "type": "string",
-              "value": "PASTE_YOUR_WEBHOOK_URL_HERE"
+              "id": "f814ced7-edbe-47ba-9a64-6aaade9dc73f",
+              "name": "parameters.city",
+              "value": "={{ $('🧪 Tool Arguments (Defaults)').item.json.parameters.city }}",
+              "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "id": "5c7e265e-6852-411c-8be5-1359315c8d05",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "⚙️CONFIGURATION⚙️",
+      "id": "c202a332-47c5-4223-a045-6de8df2cd466",
+      "name": "📝 Warm = False (No Tool Response)",
       "type": "n8n-nodes-base.set",
-      "creator": "Lucas Peyrin",
-      "position": [
-        1280,
-        440
-      ],
       "typeVersion": 3.4,
-      "notes": "© 2025 Lucas Peyrin"
+      "position": [
+        1580,
+        940
+      ],
+      "notesInFlow": true,
+      "notes": "This branch intentionally DOES NOT include a tool_response."
+    },
+    {
+      "parameters": {},
+      "id": "ef9116da-a699-49bd-a37e-4d125a8b0543",
+      "name": "🔗 Final Tool Response (append)",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        1200
+      ],
+      "notesInFlow": true,
+      "notes": "Appends outputs from all satisfied branches. Increase inputs by double-clicking and changing “Number of Inputs”."
     },
     {
       "parameters": {
-        "content": "![Key](https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2VlZDBvZGQxMGtnbW9pMDBrZTFobXZ2ZnRvdmo5OHViNzdib2Z4dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/HqVH7T3o1ggAguE4Oh/giphy.gif)",
-        "height": 256,
-        "width": 400,
+        "workflowId": {
+          "__rl": true,
+          "value": "kddpZnbPdTmuSVVG",
+          "mode": "list",
+          "cachedResultName": "My Sub-Workflow 3"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1320,
+        1380
+      ],
+      "id": "ccf9d3d7-f75e-468f-aff2-25294bf6afcc",
+      "name": "Transfer to Live Reporter"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "533f2d9c-08af-4eb7-94e2-b43f7d9ebbd4",
+              "name": "Temp",
+              "value": "={{ $('🌤️ Current Weather (Open-Meteo)').item.json.current.temperature_2m }}",
+              "type": "string"
+            },
+            {
+              "id": "0f7a1deb-277f-4406-b77c-a18d005e1bb6",
+              "name": "Unit",
+              "value": "={{ $('🌤️ Current Weather (Open-Meteo)').item.json.current_units.temperature_2m }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d49952e1-f17f-4a45-a53f-49404a0ebc68",
+      "name": "🧘 Windy = False",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1580,
+        1340
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2022172-c34c-415e-ba9c-4f57223a1844",
+              "name": "Wind Speed",
+              "value": "={{ $json.current.wind_speed_10m }}",
+              "type": "string"
+            },
+            {
+              "id": "f814ced7-edbe-47ba-9a64-6aaade9dc73f",
+              "name": "Wind Unit",
+              "value": "={{ $json.current_units.wind_speed_10m }}",
+              "type": "string"
+            },
+            {
+              "id": "72cae39c-6298-4c75-ad53-2efe00b30afd",
+              "name": "Temperature",
+              "value": "={{ $json.current.temperature_2m }}",
+              "type": "string"
+            },
+            {
+              "id": "10ee361c-b097-41f8-80db-84df70cd0ad5",
+              "name": "Temperature Unit",
+              "value": "={{ $json.current_units.temperature_2m }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5e8241d6-83b4-4da8-8b41-06a3302a2888",
+      "name": "📝 Warm = True",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1580,
+        1160
+      ],
+      "notesInFlow": true,
+      "notes": "This branch intentionally DOES NOT include a tool_response."
+    },
+    {
+      "parameters": {
+        "content": "# 🌡️ Sample Tool: get_weather",
+        "height": 980,
+        "width": 2600,
         "color": 7
       },
-      "id": "8537c4b4-929f-4d28-92b9-2ffa1bf17fdd",
-      "cid": "Ikx1Y2FzIFBleXJpbiI",
-      "name": "Sticky Note14",
       "type": "n8n-nodes-base.stickyNote",
-      "creator": "Lucas Peyrin",
       "position": [
-        2180,
-        2260
+        -280,
+        580
       ],
       "typeVersion": 1,
-      "notes": "© 2025 Lucas Peyrin"
+      "id": "9e626018-8f48-49a5-a186-566cd7bd4c3c",
+      "name": "Sticky Note6"
     }
   ],
   "connections": {
-    "Start Tutorial": {
+    "Event With Condition": {
       "main": [
         [
           {
-            "node": "⚙️CONFIGURATION⚙️",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "1. The Kitchen (GET /menu)": {
-      "main": [
-        [
-          {
-            "node": "Prepare Menu Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "2. The Kitchen (GET /order)": {
-      "main": [
-        [
-          {
-            "node": "IF extra cheese",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "3. The Kitchen (POST /review)": {
-      "main": [
-        [
-          {
-            "node": "Process Review Data",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "4. The Kitchen (GET /secret-dish)": {
-      "main": [
-        [
-          {
-            "node": "IF Authorized",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "5. The Kitchen (GET /slow-service)": {
-      "main": [
-        [
-          {
-            "node": "Wait 3 seconds",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Wait 3 seconds": {
-      "main": [
-        [
-          {
-            "node": "Prepare Slow Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "IF Authorized": {
-      "main": [
-        [
-          {
-            "node": "Respond with Secret",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Respond: Unauthorized (401)",
+            "node": "HTTP Request3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "IF extra cheese": {
+    "HTTP Request": {
       "main": [
         [
           {
-            "node": "Prepare Cheese Pizza",
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send Email to Shadi",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Transfer to Human Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tool Response",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Tool Response2",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Prepare Plain Pizza",
+            "node": "Tool Response3",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Base URL": {
+    "Tool Response": {
       "main": [
         [
           {
-            "node": "1. The Customer (GET Menu Item)",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "2. The Customer (GET with Query Params)",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "3. The Customer (POST with Body)",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "4. The Customer (GET with Headers/Auth)",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "5. The Customer (Request with Timeout)",
+            "node": "Final Tool Response",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "⚙️CONFIGURATION⚙️": {
+    "Tool Response2": {
       "main": [
         [
           {
-            "node": "Base URL",
+            "node": "Final Tool Response",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Tool Response3": {
+      "main": [
+        [
+          {
+            "node": "Final Tool Response",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "🧪 Tool Arguments (Defaults)",
             "type": "main",
             "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Event With Condition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧪 Tool Arguments (Defaults)": {
+      "main": [
+        [
+          {
+            "node": "🗺️ Geocode City (Open-Meteo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🗺️ Geocode City (Open-Meteo)": {
+      "main": [
+        [
+          {
+            "node": "🧭 Pick lat/lon + Labels",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🧭 Pick lat/lon + Labels": {
+      "main": [
+        [
+          {
+            "node": "🌤️ Current Weather (Open-Meteo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌤️ Current Weather (Open-Meteo)": {
+      "main": [
+        [
+          {
+            "node": "🌡️ Warm?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🍃 Windy?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Transfer to Live Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🌡️ Warm?": {
+      "main": [
+        [
+          {
+            "node": "✅ Action: Create Warm Notice (JSONPlaceholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📝 Warm = False (No Tool Response)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🍃 Windy?": {
+      "main": [
+        [
+          {
+            "node": "📝 Warm = True",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🧘 Windy = False",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "✅ Action: Create Warm Notice (JSONPlaceholder)": {
+      "main": [
+        [
+          {
+            "node": "📩 Tool Response (Warm Action)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📩 Tool Response (Warm Action)": {
+      "main": [
+        [
+          {
+            "node": "🔗 Final Tool Response (append)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Warm = False (No Tool Response)": {
+      "main": [
+        []
+      ]
+    },
+    "🔗 Final Tool Response (append)": {
+      "main": [
+        []
+      ]
+    },
+    "Transfer to Live Reporter": {
+      "main": [
+        []
+      ]
+    },
+    "🧘 Windy = False": {
+      "main": [
+        [
+          {
+            "node": "🔗 Final Tool Response (append)",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "📝 Warm = True": {
+      "main": [
+        [
+          {
+            "node": "🔗 Final Tool Response (append)",
+            "type": "main",
+            "index": 1
           }
         ]
       ]
     }
   },
   "pinData": {
-    "1. The Kitchen (GET /menu)": [
+    "🧪 Tool Arguments (Defaults)": [
       {
-        "body": {},
-        "query": {},
-        "params": {},
-        "headers": {
-          "host": "your-n8n-instance.com",
-          "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
-          "user-agent": "n8n",
-          "accept-encoding": "gzip, deflate, br",
-          "x-forwarded-for": "192.168.1.1",
-          "x-forwarded-host": "your-n8n-instance.com",
-          "x-forwarded-proto": "https"
-        },
-        "webhookUrl": "https://your-n8n-instance.com/webhook/tutorial/api/menu"
+        "parameters": {
+          "city": "Berlin",
+          "userId": 2,
+          "warmThreshold": 20,
+          "windyThreshold": 10
+        }
       }
     ],
-    "2. The Kitchen (GET /order)": [
+    "✅ Action: Create Warm Notice (JSONPlaceholder)": [
       {
-        "body": {},
-        "query": {
-          "extra_cheese": "true"
-        },
-        "params": {},
-        "headers": {
-          "host": "your-n8n-instance.com",
-          "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
-          "user-agent": "n8n",
-          "accept-encoding": "gzip, deflate, br",
-          "x-forwarded-for": "192.168.1.1",
-          "x-forwarded-host": "your-n8n-instance.com",
-          "x-forwarded-proto": "https"
-        },
-        "webhookUrl": "https://your-n8n-instance.com/webhook/tutorial/api/order?extra_cheese=true"
+        "userId": 1,
+        "id": 1,
+        "title": "Warm Weather Notice for Berlin",
+        "body": "It is warm"
+      },
+      {
+        "userId": 1,
+        "id": 2,
+        "title": "qui est esse",
+        "body": "est rerum tempore vitae\nsequi sint nihil reprehenderit dolor beatae ea dolores neque\nfugiat blanditiis voluptate porro vel nihil molestiae ut reiciendis\nqui aperiam non debitis possimus qui neque nisi nulla"
+      },
+      {
+        "userId": 1,
+        "id": 3,
+        "title": "ea molestias quasi exercitationem repellat qui ipsa sit aut",
+        "body": "et iusto sed quo iure\nvoluptatem occaecati omnis eligendi aut ad\nvoluptatem doloribus vel accusantium quis pariatur\nmolestiae porro eius odio et labore et velit aut"
+      },
+      {
+        "userId": 1,
+        "id": 4,
+        "title": "eum et est occaecati",
+        "body": "ullam et saepe reiciendis voluptatem adipisci\nsit amet autem assumenda provident rerum culpa\nquis hic commodi nesciunt rem tenetur doloremque ipsam iure\nquis sunt voluptatem rerum illo velit"
+      },
+      {
+        "userId": 1,
+        "id": 5,
+        "title": "nesciunt quas odio",
+        "body": "repudiandae veniam quaerat sunt sed\nalias aut fugiat sit autem sed est\nvoluptatem omnis possimus esse voluptatibus quis\nest aut tenetur dolor neque"
+      },
+      {
+        "userId": 1,
+        "id": 6,
+        "title": "dolorem eum magni eos aperiam quia",
+        "body": "ut aspernatur corporis harum nihil quis provident sequi\nmollitia nobis aliquid molestiae\nperspiciatis et ea nemo ab reprehenderit accusantium quas\nvoluptate dolores velit et doloremque molestiae"
+      },
+      {
+        "userId": 1,
+        "id": 7,
+        "title": "magnam facilis autem",
+        "body": "dolore placeat quibusdam ea quo vitae\nmagni quis enim qui quis quo nemo aut saepe\nquidem repellat excepturi ut quia\nsunt ut sequi eos ea sed quas"
+      },
+      {
+        "userId": 1,
+        "id": 8,
+        "title": "dolorem dolore est ipsam",
+        "body": "dignissimos aperiam dolorem qui eum\nfacilis quibusdam animi sint suscipit qui sint possimus cum\nquaerat magni maiores excepturi\nipsam ut commodi dolor voluptatum modi aut vitae"
+      },
+      {
+        "userId": 1,
+        "id": 9,
+        "title": "nesciunt iure omnis dolorem tempora et accusantium",
+        "body": "consectetur animi nesciunt iure dolore\nenim quia ad\nveniam autem ut quam aut nobis\net est aut quod aut provident voluptas autem voluptas"
+      },
+      {
+        "userId": 1,
+        "id": 10,
+        "title": "optio molestias id quia eum",
+        "body": "quo et expedita modi cum officia vel magni\ndoloribus qui repudiandae\nvero nisi sit\nquos veniam quod sed accusamus veritatis error"
+      },
+      {
+        "userId": 2,
+        "id": 11,
+        "title": "et ea vero quia laudantium autem",
+        "body": "delectus reiciendis molestiae occaecati non minima eveniet qui voluptatibus\naccusamus in eum beatae sit\nvel qui neque voluptates ut commodi qui incidunt\nut animi commodi"
+      },
+      {
+        "userId": 2,
+        "id": 12,
+        "title": "in quibusdam tempore odit est dolorem",
+        "body": "itaque id aut magnam\npraesentium quia et ea odit et ea voluptas et\nsapiente quia nihil amet occaecati quia id voluptatem\nincidunt ea est distinctio odio"
+      },
+      {
+        "userId": 2,
+        "id": 13,
+        "title": "dolorum ut in voluptas mollitia et saepe quo animi",
+        "body": "aut dicta possimus sint mollitia voluptas commodi quo doloremque\niste corrupti reiciendis voluptatem eius rerum\nsit cumque quod eligendi laborum minima\nperferendis recusandae assumenda consectetur porro architecto ipsum ipsam"
+      },
+      {
+        "userId": 2,
+        "id": 14,
+        "title": "voluptatem eligendi optio",
+        "body": "fuga et accusamus dolorum perferendis illo voluptas\nnon doloremque neque facere\nad qui dolorum molestiae beatae\nsed aut voluptas totam sit illum"
+      },
+      {
+        "userId": 2,
+        "id": 15,
+        "title": "eveniet quod temporibus",
+        "body": "reprehenderit quos placeat\nvelit minima officia dolores impedit repudiandae molestiae nam\nvoluptas recusandae quis delectus\nofficiis harum fugiat vitae"
+      },
+      {
+        "userId": 2,
+        "id": 16,
+        "title": "sint suscipit perspiciatis velit dolorum rerum ipsa laboriosam odio",
+        "body": "suscipit nam nisi quo aperiam aut\nasperiores eos fugit maiores voluptatibus quia\nvoluptatem quis ullam qui in alias quia est\nconsequatur magni mollitia accusamus ea nisi voluptate dicta"
+      },
+      {
+        "userId": 2,
+        "id": 17,
+        "title": "fugit voluptas sed molestias voluptatem provident",
+        "body": "eos voluptas et aut odit natus earum\naspernatur fuga molestiae ullam\ndeserunt ratione qui eos\nqui nihil ratione nemo velit ut aut id quo"
+      },
+      {
+        "userId": 2,
+        "id": 18,
+        "title": "voluptate et itaque vero tempora molestiae",
+        "body": "eveniet quo quis\nlaborum totam consequatur non dolor\nut et est repudiandae\nest voluptatem vel debitis et magnam"
+      },
+      {
+        "userId": 2,
+        "id": 19,
+        "title": "adipisci placeat illum aut reiciendis qui",
+        "body": "illum quis cupiditate provident sit magnam\nea sed aut omnis\nveniam maiores ullam consequatur atque\nadipisci quo iste expedita sit quos voluptas"
+      },
+      {
+        "userId": 2,
+        "id": 20,
+        "title": "doloribus ad provident suscipit at",
+        "body": "qui consequuntur ducimus possimus quisquam amet similique\nsuscipit porro ipsam amet\neos veritatis officiis exercitationem vel fugit aut necessitatibus totam\nomnis rerum consequatur expedita quidem cumque explicabo"
+      },
+      {
+        "userId": 3,
+        "id": 21,
+        "title": "asperiores ea ipsam voluptatibus modi minima quia sint",
+        "body": "repellat aliquid praesentium dolorem quo\nsed totam minus non itaque\nnihil labore molestiae sunt dolor eveniet hic recusandae veniam\ntempora et tenetur expedita sunt"
+      },
+      {
+        "userId": 3,
+        "id": 22,
+        "title": "dolor sint quo a velit explicabo quia nam",
+        "body": "eos qui et ipsum ipsam suscipit aut\nsed omnis non odio\nexpedita earum mollitia molestiae aut atque rem suscipit\nnam impedit esse"
+      },
+      {
+        "userId": 3,
+        "id": 23,
+        "title": "maxime id vitae nihil numquam",
+        "body": "veritatis unde neque eligendi\nquae quod architecto quo neque vitae\nest illo sit tempora doloremque fugit quod\net et vel beatae sequi ullam sed tenetur perspiciatis"
+      },
+      {
+        "userId": 3,
+        "id": 24,
+        "title": "autem hic labore sunt dolores incidunt",
+        "body": "enim et ex nulla\nomnis voluptas quia qui\nvoluptatem consequatur numquam aliquam sunt\ntotam recusandae id dignissimos aut sed asperiores deserunt"
+      },
+      {
+        "userId": 3,
+        "id": 25,
+        "title": "rem alias distinctio quo quis",
+        "body": "ullam consequatur ut\nomnis quis sit vel consequuntur\nipsa eligendi ipsum molestiae et omnis error nostrum\nmolestiae illo tempore quia et distinctio"
+      },
+      {
+        "userId": 3,
+        "id": 26,
+        "title": "est et quae odit qui non",
+        "body": "similique esse doloribus nihil accusamus\nomnis dolorem fuga consequuntur reprehenderit fugit recusandae temporibus\nperspiciatis cum ut laudantium\nomnis aut molestiae vel vero"
+      },
+      {
+        "userId": 3,
+        "id": 27,
+        "title": "quasi id et eos tenetur aut quo autem",
+        "body": "eum sed dolores ipsam sint possimus debitis occaecati\ndebitis qui qui et\nut placeat enim earum aut odit facilis\nconsequatur suscipit necessitatibus rerum sed inventore temporibus consequatur"
+      },
+      {
+        "userId": 3,
+        "id": 28,
+        "title": "delectus ullam et corporis nulla voluptas sequi",
+        "body": "non et quaerat ex quae ad maiores\nmaiores recusandae totam aut blanditiis mollitia quas illo\nut voluptatibus voluptatem\nsimilique nostrum eum"
+      },
+      {
+        "userId": 3,
+        "id": 29,
+        "title": "iusto eius quod necessitatibus culpa ea",
+        "body": "odit magnam ut saepe sed non qui\ntempora atque nihil\naccusamus illum doloribus illo dolor\neligendi repudiandae odit magni similique sed cum maiores"
+      },
+      {
+        "userId": 3,
+        "id": 30,
+        "title": "a quo magni similique perferendis",
+        "body": "alias dolor cumque\nimpedit blanditiis non eveniet odio maxime\nblanditiis amet eius quis tempora quia autem rem\na provident perspiciatis quia"
+      },
+      {
+        "userId": 4,
+        "id": 31,
+        "title": "ullam ut quidem id aut vel consequuntur",
+        "body": "debitis eius sed quibusdam non quis consectetur vitae\nimpedit ut qui consequatur sed aut in\nquidem sit nostrum et maiores adipisci atque\nquaerat voluptatem adipisci repudiandae"
+      },
+      {
+        "userId": 4,
+        "id": 32,
+        "title": "doloremque illum aliquid sunt",
+        "body": "deserunt eos nobis asperiores et hic\nest debitis repellat molestiae optio\nnihil ratione ut eos beatae quibusdam distinctio maiores\nearum voluptates et aut adipisci ea maiores voluptas maxime"
+      },
+      {
+        "userId": 4,
+        "id": 33,
+        "title": "qui explicabo molestiae dolorem",
+        "body": "rerum ut et numquam laborum odit est sit\nid qui sint in\nquasi tenetur tempore aperiam et quaerat qui in\nrerum officiis sequi cumque quod"
+      },
+      {
+        "userId": 4,
+        "id": 34,
+        "title": "magnam ut rerum iure",
+        "body": "ea velit perferendis earum ut voluptatem voluptate itaque iusto\ntotam pariatur in\nnemo voluptatem voluptatem autem magni tempora minima in\nest distinctio qui assumenda accusamus dignissimos officia nesciunt nobis"
+      },
+      {
+        "userId": 4,
+        "id": 35,
+        "title": "id nihil consequatur molestias animi provident",
+        "body": "nisi error delectus possimus ut eligendi vitae\nplaceat eos harum cupiditate facilis reprehenderit voluptatem beatae\nmodi ducimus quo illum voluptas eligendi\net nobis quia fugit"
+      },
+      {
+        "userId": 4,
+        "id": 36,
+        "title": "fuga nam accusamus voluptas reiciendis itaque",
+        "body": "ad mollitia et omnis minus architecto odit\nvoluptas doloremque maxime aut non ipsa qui alias veniam\nblanditiis culpa aut quia nihil cumque facere et occaecati\nqui aspernatur quia eaque ut aperiam inventore"
+      },
+      {
+        "userId": 4,
+        "id": 37,
+        "title": "provident vel ut sit ratione est",
+        "body": "debitis et eaque non officia sed nesciunt pariatur vel\nvoluptatem iste vero et ea\nnumquam aut expedita ipsum nulla in\nvoluptates omnis consequatur aut enim officiis in quam qui"
+      },
+      {
+        "userId": 4,
+        "id": 38,
+        "title": "explicabo et eos deleniti nostrum ab id repellendus",
+        "body": "animi esse sit aut sit nesciunt assumenda eum voluptas\nquia voluptatibus provident quia necessitatibus ea\nrerum repudiandae quia voluptatem delectus fugit aut id quia\nratione optio eos iusto veniam iure"
+      },
+      {
+        "userId": 4,
+        "id": 39,
+        "title": "eos dolorem iste accusantium est eaque quam",
+        "body": "corporis rerum ducimus vel eum accusantium\nmaxime aspernatur a porro possimus iste omnis\nest in deleniti asperiores fuga aut\nvoluptas sapiente vel dolore minus voluptatem incidunt ex"
+      },
+      {
+        "userId": 4,
+        "id": 40,
+        "title": "enim quo cumque",
+        "body": "ut voluptatum aliquid illo tenetur nemo sequi quo facilis\nipsum rem optio mollitia quas\nvoluptatem eum voluptas qui\nunde omnis voluptatem iure quasi maxime voluptas nam"
+      },
+      {
+        "userId": 5,
+        "id": 41,
+        "title": "non est facere",
+        "body": "molestias id nostrum\nexcepturi molestiae dolore omnis repellendus quaerat saepe\nconsectetur iste quaerat tenetur asperiores accusamus ex ut\nnam quidem est ducimus sunt debitis saepe"
+      },
+      {
+        "userId": 5,
+        "id": 42,
+        "title": "commodi ullam sint et excepturi error explicabo praesentium voluptas",
+        "body": "odio fugit voluptatum ducimus earum autem est incidunt voluptatem\nodit reiciendis aliquam sunt sequi nulla dolorem\nnon facere repellendus voluptates quia\nratione harum vitae ut"
+      },
+      {
+        "userId": 5,
+        "id": 43,
+        "title": "eligendi iste nostrum consequuntur adipisci praesentium sit beatae perferendis",
+        "body": "similique fugit est\nillum et dolorum harum et voluptate eaque quidem\nexercitationem quos nam commodi possimus cum odio nihil nulla\ndolorum exercitationem magnam ex et a et distinctio debitis"
+      },
+      {
+        "userId": 5,
+        "id": 44,
+        "title": "optio dolor molestias sit",
+        "body": "temporibus est consectetur dolore\net libero debitis vel velit laboriosam quia\nipsum quibusdam qui itaque fuga rem aut\nea et iure quam sed maxime ut distinctio quae"
+      },
+      {
+        "userId": 5,
+        "id": 45,
+        "title": "ut numquam possimus omnis eius suscipit laudantium iure",
+        "body": "est natus reiciendis nihil possimus aut provident\nex et dolor\nrepellat pariatur est\nnobis rerum repellendus dolorem autem"
+      },
+      {
+        "userId": 5,
+        "id": 46,
+        "title": "aut quo modi neque nostrum ducimus",
+        "body": "voluptatem quisquam iste\nvoluptatibus natus officiis facilis dolorem\nquis quas ipsam\nvel et voluptatum in aliquid"
+      },
+      {
+        "userId": 5,
+        "id": 47,
+        "title": "quibusdam cumque rem aut deserunt",
+        "body": "voluptatem assumenda ut qui ut cupiditate aut impedit veniam\noccaecati nemo illum voluptatem laudantium\nmolestiae beatae rerum ea iure soluta nostrum\neligendi et voluptate"
+      },
+      {
+        "userId": 5,
+        "id": 48,
+        "title": "ut voluptatem illum ea doloribus itaque eos",
+        "body": "voluptates quo voluptatem facilis iure occaecati\nvel assumenda rerum officia et\nillum perspiciatis ab deleniti\nlaudantium repellat ad ut et autem reprehenderit"
+      },
+      {
+        "userId": 5,
+        "id": 49,
+        "title": "laborum non sunt aut ut assumenda perspiciatis voluptas",
+        "body": "inventore ab sint\nnatus fugit id nulla sequi architecto nihil quaerat\neos tenetur in in eum veritatis non\nquibusdam officiis aspernatur cumque aut commodi aut"
+      },
+      {
+        "userId": 5,
+        "id": 50,
+        "title": "repellendus qui recusandae incidunt voluptates tenetur qui omnis exercitationem",
+        "body": "error suscipit maxime adipisci consequuntur recusandae\nvoluptas eligendi et est et voluptates\nquia distinctio ab amet quaerat molestiae et vitae\nadipisci impedit sequi nesciunt quis consectetur"
+      },
+      {
+        "userId": 6,
+        "id": 51,
+        "title": "soluta aliquam aperiam consequatur illo quis voluptas",
+        "body": "sunt dolores aut doloribus\ndolore doloribus voluptates tempora et\ndoloremque et quo\ncum asperiores sit consectetur dolorem"
+      },
+      {
+        "userId": 6,
+        "id": 52,
+        "title": "qui enim et consequuntur quia animi quis voluptate quibusdam",
+        "body": "iusto est quibusdam fuga quas quaerat molestias\na enim ut sit accusamus enim\ntemporibus iusto accusantium provident architecto\nsoluta esse reprehenderit qui laborum"
+      },
+      {
+        "userId": 6,
+        "id": 53,
+        "title": "ut quo aut ducimus alias",
+        "body": "minima harum praesentium eum rerum illo dolore\nquasi exercitationem rerum nam\nporro quis neque quo\nconsequatur minus dolor quidem veritatis sunt non explicabo similique"
+      },
+      {
+        "userId": 6,
+        "id": 54,
+        "title": "sit asperiores ipsam eveniet odio non quia",
+        "body": "totam corporis dignissimos\nvitae dolorem ut occaecati accusamus\nex velit deserunt\net exercitationem vero incidunt corrupti mollitia"
+      },
+      {
+        "userId": 6,
+        "id": 55,
+        "title": "sit vel voluptatem et non libero",
+        "body": "debitis excepturi ea perferendis harum libero optio\neos accusamus cum fuga ut sapiente repudiandae\net ut incidunt omnis molestiae\nnihil ut eum odit"
+      },
+      {
+        "userId": 6,
+        "id": 56,
+        "title": "qui et at rerum necessitatibus",
+        "body": "aut est omnis dolores\nneque rerum quod ea rerum velit pariatur beatae excepturi\net provident voluptas corrupti\ncorporis harum reprehenderit dolores eligendi"
+      },
+      {
+        "userId": 6,
+        "id": 57,
+        "title": "sed ab est est",
+        "body": "at pariatur consequuntur earum quidem\nquo est laudantium soluta voluptatem\nqui ullam et est\net cum voluptas voluptatum repellat est"
+      },
+      {
+        "userId": 6,
+        "id": 58,
+        "title": "voluptatum itaque dolores nisi et quasi",
+        "body": "veniam voluptatum quae adipisci id\net id quia eos ad et dolorem\naliquam quo nisi sunt eos impedit error\nad similique veniam"
+      },
+      {
+        "userId": 6,
+        "id": 59,
+        "title": "qui commodi dolor at maiores et quis id accusantium",
+        "body": "perspiciatis et quam ea autem temporibus non voluptatibus qui\nbeatae a earum officia nesciunt dolores suscipit voluptas et\nanimi doloribus cum rerum quas et magni\net hic ut ut commodi expedita sunt"
+      },
+      {
+        "userId": 6,
+        "id": 60,
+        "title": "consequatur placeat omnis quisquam quia reprehenderit fugit veritatis facere",
+        "body": "asperiores sunt ab assumenda cumque modi velit\nqui esse omnis\nvoluptate et fuga perferendis voluptas\nillo ratione amet aut et omnis"
+      },
+      {
+        "userId": 7,
+        "id": 61,
+        "title": "voluptatem doloribus consectetur est ut ducimus",
+        "body": "ab nemo optio odio\ndelectus tenetur corporis similique nobis repellendus rerum omnis facilis\nvero blanditiis debitis in nesciunt doloribus dicta dolores\nmagnam minus velit"
+      },
+      {
+        "userId": 7,
+        "id": 62,
+        "title": "beatae enim quia vel",
+        "body": "enim aspernatur illo distinctio quae praesentium\nbeatae alias amet delectus qui voluptate distinctio\nodit sint accusantium autem omnis\nquo molestiae omnis ea eveniet optio"
+      },
+      {
+        "userId": 7,
+        "id": 63,
+        "title": "voluptas blanditiis repellendus animi ducimus error sapiente et suscipit",
+        "body": "enim adipisci aspernatur nemo\nnumquam omnis facere dolorem dolor ex quis temporibus incidunt\nab delectus culpa quo reprehenderit blanditiis asperiores\naccusantium ut quam in voluptatibus voluptas ipsam dicta"
+      },
+      {
+        "userId": 7,
+        "id": 64,
+        "title": "et fugit quas eum in in aperiam quod",
+        "body": "id velit blanditiis\neum ea voluptatem\nmolestiae sint occaecati est eos perspiciatis\nincidunt a error provident eaque aut aut qui"
+      },
+      {
+        "userId": 7,
+        "id": 65,
+        "title": "consequatur id enim sunt et et",
+        "body": "voluptatibus ex esse\nsint explicabo est aliquid cumque adipisci fuga repellat labore\nmolestiae corrupti ex saepe at asperiores et perferendis\nnatus id esse incidunt pariatur"
+      },
+      {
+        "userId": 7,
+        "id": 66,
+        "title": "repudiandae ea animi iusto",
+        "body": "officia veritatis tenetur vero qui itaque\nsint non ratione\nsed et ut asperiores iusto eos molestiae nostrum\nveritatis quibusdam et nemo iusto saepe"
+      },
+      {
+        "userId": 7,
+        "id": 67,
+        "title": "aliquid eos sed fuga est maxime repellendus",
+        "body": "reprehenderit id nostrum\nvoluptas doloremque pariatur sint et accusantium quia quod aspernatur\net fugiat amet\nnon sapiente et consequatur necessitatibus molestiae"
+      },
+      {
+        "userId": 7,
+        "id": 68,
+        "title": "odio quis facere architecto reiciendis optio",
+        "body": "magnam molestiae perferendis quisquam\nqui cum reiciendis\nquaerat animi amet hic inventore\nea quia deleniti quidem saepe porro velit"
+      },
+      {
+        "userId": 7,
+        "id": 69,
+        "title": "fugiat quod pariatur odit minima",
+        "body": "officiis error culpa consequatur modi asperiores et\ndolorum assumenda voluptas et vel qui aut vel rerum\nvoluptatum quisquam perspiciatis quia rerum consequatur totam quas\nsequi commodi repudiandae asperiores et saepe a"
+      },
+      {
+        "userId": 7,
+        "id": 70,
+        "title": "voluptatem laborum magni",
+        "body": "sunt repellendus quae\nest asperiores aut deleniti esse accusamus repellendus quia aut\nquia dolorem unde\neum tempora esse dolore"
+      },
+      {
+        "userId": 8,
+        "id": 71,
+        "title": "et iusto veniam et illum aut fuga",
+        "body": "occaecati a doloribus\niste saepe consectetur placeat eum voluptate dolorem et\nqui quo quia voluptas\nrerum ut id enim velit est perferendis"
+      },
+      {
+        "userId": 8,
+        "id": 72,
+        "title": "sint hic doloribus consequatur eos non id",
+        "body": "quam occaecati qui deleniti consectetur\nconsequatur aut facere quas exercitationem aliquam hic voluptas\nneque id sunt ut aut accusamus\nsunt consectetur expedita inventore velit"
+      },
+      {
+        "userId": 8,
+        "id": 73,
+        "title": "consequuntur deleniti eos quia temporibus ab aliquid at",
+        "body": "voluptatem cumque tenetur consequatur expedita ipsum nemo quia explicabo\naut eum minima consequatur\ntempore cumque quae est et\net in consequuntur voluptatem voluptates aut"
+      },
+      {
+        "userId": 8,
+        "id": 74,
+        "title": "enim unde ratione doloribus quas enim ut sit sapiente",
+        "body": "odit qui et et necessitatibus sint veniam\nmollitia amet doloremque molestiae commodi similique magnam et quam\nblanditiis est itaque\nquo et tenetur ratione occaecati molestiae tempora"
+      },
+      {
+        "userId": 8,
+        "id": 75,
+        "title": "dignissimos eum dolor ut enim et delectus in",
+        "body": "commodi non non omnis et voluptas sit\nautem aut nobis magnam et sapiente voluptatem\net laborum repellat qui delectus facilis temporibus\nrerum amet et nemo voluptate expedita adipisci error dolorem"
+      },
+      {
+        "userId": 8,
+        "id": 76,
+        "title": "doloremque officiis ad et non perferendis",
+        "body": "ut animi facere\ntotam iusto tempore\nmolestiae eum aut et dolorem aperiam\nquaerat recusandae totam odio"
+      },
+      {
+        "userId": 8,
+        "id": 77,
+        "title": "necessitatibus quasi exercitationem odio",
+        "body": "modi ut in nulla repudiandae dolorum nostrum eos\naut consequatur omnis\nut incidunt est omnis iste et quam\nvoluptates sapiente aliquam asperiores nobis amet corrupti repudiandae provident"
+      },
+      {
+        "userId": 8,
+        "id": 78,
+        "title": "quam voluptatibus rerum veritatis",
+        "body": "nobis facilis odit tempore cupiditate quia\nassumenda doloribus rerum qui ea\nillum et qui totam\naut veniam repellendus"
+      },
+      {
+        "userId": 8,
+        "id": 79,
+        "title": "pariatur consequatur quia magnam autem omnis non amet",
+        "body": "libero accusantium et et facere incidunt sit dolorem\nnon excepturi qui quia sed laudantium\nquisquam molestiae ducimus est\nofficiis esse molestiae iste et quos"
+      },
+      {
+        "userId": 8,
+        "id": 80,
+        "title": "labore in ex et explicabo corporis aut quas",
+        "body": "ex quod dolorem ea eum iure qui provident amet\nquia qui facere excepturi et repudiandae\nasperiores molestias provident\nminus incidunt vero fugit rerum sint sunt excepturi provident"
+      },
+      {
+        "userId": 9,
+        "id": 81,
+        "title": "tempora rem veritatis voluptas quo dolores vero",
+        "body": "facere qui nesciunt est voluptatum voluptatem nisi\nsequi eligendi necessitatibus ea at rerum itaque\nharum non ratione velit laboriosam quis consequuntur\nex officiis minima doloremque voluptas ut aut"
+      },
+      {
+        "userId": 9,
+        "id": 82,
+        "title": "laudantium voluptate suscipit sunt enim enim",
+        "body": "ut libero sit aut totam inventore sunt\nporro sint qui sunt molestiae\nconsequatur cupiditate qui iste ducimus adipisci\ndolor enim assumenda soluta laboriosam amet iste delectus hic"
+      },
+      {
+        "userId": 9,
+        "id": 83,
+        "title": "odit et voluptates doloribus alias odio et",
+        "body": "est molestiae facilis quis tempora numquam nihil qui\nvoluptate sapiente consequatur est qui\nnecessitatibus autem aut ipsa aperiam modi dolore numquam\nreprehenderit eius rem quibusdam"
+      },
+      {
+        "userId": 9,
+        "id": 84,
+        "title": "optio ipsam molestias necessitatibus occaecati facilis veritatis dolores aut",
+        "body": "sint molestiae magni a et quos\neaque et quasi\nut rerum debitis similique veniam\nrecusandae dignissimos dolor incidunt consequatur odio"
+      },
+      {
+        "userId": 9,
+        "id": 85,
+        "title": "dolore veritatis porro provident adipisci blanditiis et sunt",
+        "body": "similique sed nisi voluptas iusto omnis\nmollitia et quo\nassumenda suscipit officia magnam sint sed tempora\nenim provident pariatur praesentium atque animi amet ratione"
+      },
+      {
+        "userId": 9,
+        "id": 86,
+        "title": "placeat quia et porro iste",
+        "body": "quasi excepturi consequatur iste autem temporibus sed molestiae beatae\net quaerat et esse ut\nvoluptatem occaecati et vel explicabo autem\nasperiores pariatur deserunt optio"
+      },
+      {
+        "userId": 9,
+        "id": 87,
+        "title": "nostrum quis quasi placeat",
+        "body": "eos et molestiae\nnesciunt ut a\ndolores perspiciatis repellendus repellat aliquid\nmagnam sint rem ipsum est"
+      },
+      {
+        "userId": 9,
+        "id": 88,
+        "title": "sapiente omnis fugit eos",
+        "body": "consequatur omnis est praesentium\nducimus non iste\nneque hic deserunt\nvoluptatibus veniam cum et rerum sed"
+      },
+      {
+        "userId": 9,
+        "id": 89,
+        "title": "sint soluta et vel magnam aut ut sed qui",
+        "body": "repellat aut aperiam totam temporibus autem et\narchitecto magnam ut\nconsequatur qui cupiditate rerum quia soluta dignissimos nihil iure\ntempore quas est"
+      },
+      {
+        "userId": 9,
+        "id": 90,
+        "title": "ad iusto omnis odit dolor voluptatibus",
+        "body": "minus omnis soluta quia\nqui sed adipisci voluptates illum ipsam voluptatem\neligendi officia ut in\neos soluta similique molestias praesentium blanditiis"
+      },
+      {
+        "userId": 10,
+        "id": 91,
+        "title": "aut amet sed",
+        "body": "libero voluptate eveniet aperiam sed\nsunt placeat suscipit molestias\nsimilique fugit nam natus\nexpedita consequatur consequatur dolores quia eos et placeat"
+      },
+      {
+        "userId": 10,
+        "id": 92,
+        "title": "ratione ex tenetur perferendis",
+        "body": "aut et excepturi dicta laudantium sint rerum nihil\nlaudantium et at\na neque minima officia et similique libero et\ncommodi voluptate qui"
+      },
+      {
+        "userId": 10,
+        "id": 93,
+        "title": "beatae soluta recusandae",
+        "body": "dolorem quibusdam ducimus consequuntur dicta aut quo laboriosam\nvoluptatem quis enim recusandae ut sed sunt\nnostrum est odit totam\nsit error sed sunt eveniet provident qui nulla"
+      },
+      {
+        "userId": 10,
+        "id": 94,
+        "title": "qui qui voluptates illo iste minima",
+        "body": "aspernatur expedita soluta quo ab ut similique\nexpedita dolores amet\nsed temporibus distinctio magnam saepe deleniti\nomnis facilis nam ipsum natus sint similique omnis"
+      },
+      {
+        "userId": 10,
+        "id": 95,
+        "title": "id minus libero illum nam ad officiis",
+        "body": "earum voluptatem facere provident blanditiis velit laboriosam\npariatur accusamus odio saepe\ncumque dolor qui a dicta ab doloribus consequatur omnis\ncorporis cupiditate eaque assumenda ad nesciunt"
+      },
+      {
+        "userId": 10,
+        "id": 96,
+        "title": "quaerat velit veniam amet cupiditate aut numquam ut sequi",
+        "body": "in non odio excepturi sint eum\nlabore voluptates vitae quia qui et\ninventore itaque rerum\nveniam non exercitationem delectus aut"
+      },
+      {
+        "userId": 10,
+        "id": 97,
+        "title": "quas fugiat ut perspiciatis vero provident",
+        "body": "eum non blanditiis soluta porro quibusdam voluptas\nvel voluptatem qui placeat dolores qui velit aut\nvel inventore aut cumque culpa explicabo aliquid at\nperspiciatis est et voluptatem dignissimos dolor itaque sit nam"
+      },
+      {
+        "userId": 10,
+        "id": 98,
+        "title": "laboriosam dolor voluptates",
+        "body": "doloremque ex facilis sit sint culpa\nsoluta assumenda eligendi non ut eius\nsequi ducimus vel quasi\nveritatis est dolores"
+      },
+      {
+        "userId": 10,
+        "id": 99,
+        "title": "temporibus sit alias delectus eligendi possimus magni",
+        "body": "quo deleniti praesentium dicta non quod\naut est molestias\nmolestias et officia quis nihil\nitaque dolorem quia"
+      },
+      {
+        "userId": 10,
+        "id": 100,
+        "title": "at nam consequatur ea labore ea harum",
+        "body": "cupiditate quo est a modi nesciunt soluta\nipsa voluptas error itaque dicta in\nautem qui minus magnam et distinctio eum\naccusamus ratione error aut"
       }
     ],
-    "3. The Kitchen (POST /review)": [
+    "📩 Tool Response (Warm Action)": [
       {
-        "body": {
-          "rating": 5,
-          "comment": "The pizza was amazing!"
-        },
-        "query": {},
-        "params": {},
-        "headers": {
-          "host": "your-n8n-instance.com",
-          "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
-          "user-agent": "n8n",
-          "content-type": "application/json",
-          "content-length": "49",
-          "accept-encoding": "gzip, deflate, br",
-          "x-forwarded-for": "192.168.1.1",
-          "x-forwarded-host": "your-n8n-instance.com",
-          "x-forwarded-proto": "https"
-        },
-        "webhookUrl": "https://your-n8n-instance.com/webhook/tutorial/api/review"
-      }
-    ],
-    "4. The Kitchen (GET /secret-dish)": [
-      {
-        "body": {},
-        "query": {},
-        "params": {},
-        "headers": {
-          "host": "your-n8n-instance.com",
-          "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
-          "x-api-key": "super-secret-key",
-          "user-agent": "n8n",
-          "accept-encoding": "gzip, deflate, br",
-          "x-forwarded-for": "192.168.1.1",
-          "x-forwarded-host": "your-n8n-instance.com",
-          "x-forwarded-proto": "https"
-        },
-        "webhookUrl": "https://your-n8n-instance.com/webhook/tutorial/api/secret-dish"
-      }
-    ],
-    "5. The Kitchen (GET /slow-service)": [
-      {
-        "body": {},
-        "query": {},
-        "params": {},
-        "headers": {
-          "host": "your-n8n-instance.com",
-          "accept": "application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7",
-          "user-agent": "n8n",
-          "accept-encoding": "gzip, deflate, br",
-          "x-forwarded-for": "192.168.1.1",
-          "x-forwarded-host": "your-n8n-instance.com",
-          "x-forwarded-proto": "https"
-        },
-        "webhookUrl": "https://your-n8n-instance.com/webhook/tutorial/api/slow-service"
+        "Weather Announcement": "Warm Weather Notice for Berlin"
       }
     ]
   },
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "0606d251a4919d55d184498ed21555f0b8286ff9a93208d9d4880906f5e5bbcf"
   }
 }
