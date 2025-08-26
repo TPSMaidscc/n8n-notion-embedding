@@ -47,8 +47,42 @@ jobs:
         env:
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
         run: |
-          # Replace the placeholder with the actual API key
-          sed -i "s/__N8N_API_KEY__/$N8N_API_KEY/g" index.html
+          # Debug: Check if secret is available
+          if [ -z "$N8N_API_KEY" ]; then
+            echo "❌ ERROR: N8N_API_KEY secret is not available"
+            echo "Please check that the secret is set in Repository Settings -> Secrets and variables -> Actions"
+            exit 1
+          fi
+          
+          # Debug: Show placeholder before replacement
+          echo "🔍 Checking for placeholder in index.html:"
+          grep -n "__N8N_API_KEY__" index.html || echo "No placeholder found"
+          
+          # Replace the placeholder with the actual API key (escape special characters)
+          # Use a more robust replacement method
+          python3 -c "
+import re
+import os
+import sys
+
+api_key = os.environ.get('N8N_API_KEY')
+if not api_key:
+    print('❌ ERROR: N8N_API_KEY environment variable is not set')
+    sys.exit(1)
+
+# Read the file
+with open('index.html', 'r') as f:
+    content = f.read()
+
+# Replace the placeholder
+new_content = content.replace('__N8N_API_KEY__', api_key)
+
+# Write back
+with open('index.html', 'w') as f:
+    f.write(new_content)
+
+print('✅ API key injection completed')
+"
           
           # Verify the replacement worked
           if grep -q "__N8N_API_KEY__" index.html; then
