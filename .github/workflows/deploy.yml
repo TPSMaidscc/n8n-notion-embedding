@@ -89,13 +89,20 @@ jobs:
           # Run the Python script
           python3 inject_key.py
           
+          # Debug: Show what actually got replaced
+          echo "🔍 Checking index.html after replacement:"
+          grep -n "this.apiKey" index.html | head -3
+          
           # Verify the replacement worked
           if grep -q "__N8N_API_KEY__" index.html; then
             echo "❌ ERROR: Placeholder __N8N_API_KEY__ still found in index.html"
+            echo "📄 Lines containing the placeholder:"
+            grep -n "__N8N_API_KEY__" index.html
             echo "This means the API key injection failed!"
             exit 1
           else
             echo "✅ API key successfully injected into index.html"
+            echo "🔑 API key now starts with: $(grep "this.apiKey = " index.html | head -1 | cut -d"'" -f2 | cut -c1-10)..."
           fi
 
       - name: Upload artifact
