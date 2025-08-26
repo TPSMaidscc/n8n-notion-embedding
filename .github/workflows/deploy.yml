@@ -43,6 +43,31 @@ jobs:
             echo "No package.json found, skipping npm install"
           fi
 
+      - name: Create Python injection script
+        run: |
+          cat > inject_key.py << 'EOF'
+          import os
+          import sys
+          
+          api_key = os.environ.get("N8N_API_KEY")
+          if not api_key:
+              print("❌ ERROR: N8N_API_KEY environment variable is not set")
+              sys.exit(1)
+          
+          # Read the file
+          with open("index.html", "r") as f:
+              content = f.read()
+          
+          # Replace the placeholder
+          new_content = content.replace("__N8N_API_KEY__", api_key)
+          
+          # Write back
+          with open("index.html", "w") as f:
+              f.write(new_content)
+          
+          print("✅ API key injection completed")
+          EOF
+
       - name: Inject API Key into HTML
         env:
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
@@ -58,30 +83,8 @@ jobs:
           echo "🔍 Checking for placeholder in index.html:"
           grep -n "__N8N_API_KEY__" index.html || echo "No placeholder found"
           
-          # Replace the placeholder with the actual API key (escape special characters)
-          # Use a more robust replacement method
-          python3 -c '
-import os
-import sys
-
-api_key = os.environ.get("N8N_API_KEY")
-if not api_key:
-    print("❌ ERROR: N8N_API_KEY environment variable is not set")
-    sys.exit(1)
-
-# Read the file
-with open("index.html", "r") as f:
-    content = f.read()
-
-# Replace the placeholder
-new_content = content.replace("__N8N_API_KEY__", api_key)
-
-# Write back
-with open("index.html", "w") as f:
-    f.write(new_content)
-
-print("✅ API key injection completed")
-'
+          # Run the Python script
+          python3 inject_key.py
           
           # Verify the replacement worked
           if grep -q "__N8N_API_KEY__" index.html; then
