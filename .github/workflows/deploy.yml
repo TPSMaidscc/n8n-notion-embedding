@@ -60,29 +60,28 @@ jobs:
           
           # Replace the placeholder with the actual API key (escape special characters)
           # Use a more robust replacement method
-          python3 -c "
-import re
+          python3 -c '
 import os
 import sys
 
-api_key = os.environ.get('N8N_API_KEY')
+api_key = os.environ.get("N8N_API_KEY")
 if not api_key:
-    print('❌ ERROR: N8N_API_KEY environment variable is not set')
+    print("❌ ERROR: N8N_API_KEY environment variable is not set")
     sys.exit(1)
 
 # Read the file
-with open('index.html', 'r') as f:
+with open("index.html", "r") as f:
     content = f.read()
 
 # Replace the placeholder
-new_content = content.replace('__N8N_API_KEY__', api_key)
+new_content = content.replace("__N8N_API_KEY__", api_key)
 
 # Write back
-with open('index.html', 'w') as f:
+with open("index.html", "w") as f:
     f.write(new_content)
 
-print('✅ API key injection completed')
-"
+print("✅ API key injection completed")
+'
           
           # Verify the replacement worked
           if grep -q "__N8N_API_KEY__" index.html; then
