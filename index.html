@@ -114,7 +114,7 @@
           <button id="refreshPreviewBtn" class="btn btn-outline" style="font-size: 14px; padding: 12px 20px;" title="Refresh the preview to see the latest changes after editing the workflow">
             <span>🔄</span> Refresh Preview
           </button>
-          <button id="editWorkflowBtn" class="btn btn-primary" disabled style="font-size: 14px; padding: 12px 24px;" title="Open the n8n workflow editor in a popup window for editing">
+          <button id="editWorkflowBtn" class="btn btn-primary" disabled style="font-size: 14px; padding: 12px 24px;" title="Open the n8n workflow editor in a new tab for editing">
             <span>✏️</span> Edit Workflow
           </button>
         </div>
@@ -210,6 +210,18 @@
         // Build the editor URL
         const editorUrl = `${cleanUrl}/workflow/${this.currentWorkflow.id}`;
         
+        // Open in new tab
+        const newTab = window.open(editorUrl, '_blank');
+        
+        if (newTab) {
+          this.showStatus(`✏️ Opened "${this.currentWorkflow.name}" in new tab`, 'success');
+          console.log('✅ Workflow editor opened successfully in new tab');
+        } else {
+          this.showStatus('❌ Failed to open editor. Check if popups are blocked.', 'error');
+          console.log('❌ Editor failed to open in new tab');
+        }
+
+        /* COMMENTED OUT: Previous popup implementation
         // Open in popup window with optimal settings
         const popup = window.open(
           editorUrl,
@@ -244,6 +256,7 @@
           this.showStatus('❌ Failed to open editor. Check if popups are blocked.', 'error');
           console.log('❌ Editor popup blocked or failed to open');
         }
+        */
       }
       
 
