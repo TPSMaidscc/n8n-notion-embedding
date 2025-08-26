@@ -72,12 +72,15 @@ jobs:
         env:
           N8N_API_KEY: ${{ secrets.N8N_API_KEY }}
         run: |
-          # Debug: Check if secret is available
+          # Debug: Check if secret is available and show length
           if [ -z "$N8N_API_KEY" ]; then
             echo "❌ ERROR: N8N_API_KEY secret is not available"
             echo "Please check that the secret is set in Repository Settings -> Secrets and variables -> Actions"
             exit 1
           fi
+          
+          echo "🔑 API key length: ${#N8N_API_KEY} characters"
+          echo "🔑 API key starts with: ${N8N_API_KEY:0:10}..."
           
           # Debug: Show placeholder before replacement
           echo "🔍 Checking for placeholder in index.html:"
