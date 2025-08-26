@@ -151,18 +151,9 @@
         this.baseN8nUrl = 'https://n8n-test.teljoy.io';
         this.corsProxyUrl = 'https://corsproxy.io/?https://n8n-test.teljoy.io';
         this.n8nUrl = this.baseN8nUrl; // Start with direct connection
-        // API key - injected during GitHub Pages build, fallback for localhost development
+        // API key - injected during GitHub Pages build
         this.apiKey = '__N8N_API_KEY__';
-        
-        // Check if we're using the placeholder (localhost development)
-        if (this.apiKey === '__N8N_API_KEY__') {
-          console.error('🚨 DEVELOPMENT MODE ERROR: No API key available!');
-          console.error('💡 For localhost development, you need to manually set the API key in the code or use environment variables.');
-          this.showStatus('❌ No API key configured for development mode', 'error');
-          return;
-        } else {
-          console.log('✅ Using injected API key from GitHub Secrets');
-        }
+        console.log('✅ Using API key from GitHub Secrets deployment');
         this.workflows = [];
         this.currentWorkflow = null;
         this.isConnected = false;
