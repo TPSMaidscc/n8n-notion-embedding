@@ -168,13 +168,10 @@
         this.elements.editWorkflowBtn.disabled = true;
         this.elements.refreshPreviewBtn.disabled = false; // Always enabled for refresh & reload
         
-        // Auto-connect with hardcoded API key after a small delay
+        // Auto-connect with hardcoded API key after a short delay
         setTimeout(() => {
           this.connect();
-        }, 1000);
-        
-        // Check if workflow was passed via URL parameters
-        this.handleUrlWorkflow();
+        }, 300);
       }
       
       initializeElements() {
@@ -831,13 +828,17 @@
           const workflow = await this.makeApiCall(`/api/v1/workflows/${workflowId}`);
           this.currentWorkflow = workflow;
           
-          // Update preview
+          // Force preview refresh to ensure display
+          this.forcePreviewRefresh();
+          
+          // Update preview with workflow data
           this.elements.preview.setAttribute('workflow', JSON.stringify(workflow));
           
           // Enable edit button
           this.elements.editWorkflowBtn.disabled = false;
           
-          this.showStatus(`✅ Loaded workflow: ${workflow.name}`, 'success');
+          this.showStatus(`✅ Loaded and displayed workflow: ${workflow.name}`, 'success');
+          console.log('🎯 Workflow automatically loaded and displayed in preview');
           
         } catch (error) {
           console.error('Failed to load workflow:', error);
